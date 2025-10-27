@@ -1,0 +1,69 @@
+/DDD-Practice.sln
+
+# Build outputs
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userprefs
+
+# Visual Studio files
+.vs/
+.vscode/
+
+# Rider IDE files
+.idea/
+
+# DotNet Core publish output
+**/publish/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Resharper files
+_ReSharper*/
+*.DotSettings.user
+
+# Logs
+*.log
+
+# Coverage reports
+coverage/
+*.coverage
+*.coveragexml
+
+# Test result files
+TestResults/
+*.trx
+
+# Docker files (optional)
+docker-compose.override.yml
+
+# Others
+*.dbmdl
+*.bak
+*.cache
+*.pidb
+*.sln.ide
+
+# Ignore Docker container data (if any)
+docker/data/
+
+# Ignore Azure DevOps files (if any)
+.vscode/tasks.json
+.vscode/launch.json
+
+# Ignore publish profile files
+**/Properties/launchSettings.json
+
+# Ignore Rider caches
+.idea/
+
+# Ignore VS Code workspace settings
+*.code-workspace
+*.exe
+*.dll
