@@ -9,9 +9,6 @@ public class ProductMapper
 {
     public static ProductResponseDto ToDto(ProductEntity productEntity)
     {
-        if (productEntity == null) return new ProductResponseDto();
-        
-        
         return new ProductResponseDto()
         {
             Id = productEntity.Id,
@@ -36,8 +33,6 @@ public class ProductMapper
 
     public static ProductEntity ToEntity(ProductCreateDTO productCreateDto)
     {
-        if (productCreateDto == null) return new ProductEntity();
-        
         return new ProductEntity
         {
             Id = Guid.NewGuid(),
@@ -55,7 +50,6 @@ public class ProductMapper
     
     public static ProductEntity ToCreateEntity(ProductCreateDTO productCreateDto)
     {
-        if (productCreateDto == null) return new ProductEntity();
     
         return new ProductEntity
         {
@@ -90,8 +84,6 @@ public class ProductMapper
 
     public static ProductFilter toFilter(ProductFilterDTO productFilterDto)
     {
-        if(productFilterDto == null) return new ProductFilter(null, null, null,null, null);
-
         return new ProductFilter(
             productFilterDto.Category,
             productFilterDto.Name,

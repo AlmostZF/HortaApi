@@ -36,8 +36,6 @@ public static class OrderReservationItemMapper
 
     public static OrderReservationItemEntity ToEntity(OrderReservationItemResponseDto orderReservationResponseDto)
     {
-        if (orderReservationResponseDto == null) return new OrderReservationItemEntity();
-        
         return new OrderReservationItemEntity
         {
             Id = Guid.NewGuid(),

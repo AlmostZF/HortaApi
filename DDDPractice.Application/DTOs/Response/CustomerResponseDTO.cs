@@ -2,7 +2,7 @@ using DDD_Practice.DDDPractice.Domain.ValueObjects;
 
 namespace DDDPractice.Application.DTOs;
 
-public class UserResponseDto
+public class CustomerResponseDto
 {
     public Guid? Id { get; set; }
     public string Name { get; set; }
@@ -10,7 +10,7 @@ public class UserResponseDto
     
     public SecurityCode? SecurityCode { get; private set; }
     
-    public UserResponseDto(SecurityCode securityCode)
+    public CustomerResponseDto(SecurityCode securityCode)
     {
         SecurityCode = securityCode;
     }

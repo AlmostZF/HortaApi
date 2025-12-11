@@ -17,6 +17,6 @@ public class OrderReservationResponseDto
     
     public IEnumerable<OrderReservationItemResponseDto> listOrderItens { get; set; }
 
-    public UserResponseDto UserResponse { get; set; }
+    public CustomerResponseDto UserResponse { get; set; }
 
 }

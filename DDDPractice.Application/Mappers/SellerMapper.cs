@@ -8,8 +8,6 @@ public class SellerMapper
 {
     public static SellerResponseDto ToDto(SellerEntity sellerEntity)
     {
-        if (sellerEntity == null) return new SellerResponseDto();
-        
         return new SellerResponseDto()
         {
             Id = sellerEntity.Id,
@@ -28,32 +26,20 @@ public class SellerMapper
 
     public static SellerEntity ToEntity(SellerResponseDto sellerResponseDto)
     {
-        if (sellerResponseDto == null) return new SellerEntity(null);
-        
-        return new SellerEntity(sellerResponseDto.PickupLocation)
-        {
-            Id = Guid.NewGuid(),
-            Name = sellerResponseDto.Name ,
-            PhoneNumber = sellerResponseDto.PhoneNumber,
-        };
+
+        return new SellerEntity(sellerResponseDto.Name, sellerResponseDto.PhoneNumber,
+            sellerResponseDto.PickupLocation);
     }
     public static void ToUpdateEntity(SellerEntity sellerEntity, SellerUpdateDTO sellerUpdateDTO)
     {
-
-        sellerEntity.Id = sellerUpdateDTO.Id;
-        sellerEntity.Name = sellerUpdateDTO.Name;
-        sellerEntity.PhoneNumber = sellerUpdateDTO.PhoneNumber;
+        sellerEntity.SetName(sellerUpdateDTO.Name);
+        sellerEntity.SetPhoneNumber(sellerUpdateDTO.PhoneNumber);
     }
+    
     public static SellerEntity ToCreateEntity(SellerCreateDTO sellerCreateDTO)
     {
-        if (sellerCreateDTO == null) return new SellerEntity(null);
-        
-        return new SellerEntity(sellerCreateDTO.PickupLocation)
-        {
-            Id = Guid.NewGuid(),
-            Name = sellerCreateDTO.Name ,
-            PhoneNumber = sellerCreateDTO.PhoneNumber,
-        };
+
+        return new SellerEntity(sellerCreateDTO.Name, sellerCreateDTO.PhoneNumber, sellerCreateDTO.PickupLocation);
     }
     
 

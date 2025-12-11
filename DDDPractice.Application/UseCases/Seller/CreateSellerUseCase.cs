@@ -14,16 +14,16 @@ public class CreateSellerUseCase
         _sellerService = sellerService;
     }
     
-    public async Task<Result> ExecuteAsync(SellerCreateDTO sellerCreateDto)
+    public async Task<Result<Guid>> ExecuteAsync(SellerCreateDTO sellerCreateDto)
     {
         try
         {
-           await _sellerService.AddAsync(sellerCreateDto);
-            return Result.Success("vendedor criado com sucesso",200);
+           var guid = await _sellerService.AddAsync(sellerCreateDto);
+           return Result<Guid>.Success(guid,201);
         }
         catch (Exception e)
         {
-            return Result.Failure("Erro ao crair vendedor", 500);
+            return Result<Guid>.Failure("Erro ao crair vendedor", 500);
         }
     }
 }

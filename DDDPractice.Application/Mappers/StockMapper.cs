@@ -9,8 +9,6 @@ public class StockMapper
 {
     public static StockResponseDto ToDto(StockEntity stockEntity)
     {
-        if (stockEntity == null) return new StockResponseDto();
-
         return new StockResponseDto
         {
             Id = stockEntity.Id,
@@ -24,8 +22,6 @@ public class StockMapper
     }
     public static StockAvailableResponseDto ToAvailableDto(StockEntity stockEntity)
     {
-        if (stockEntity == null) return new StockAvailableResponseDto();
-
         return new StockAvailableResponseDto
         {
             Product = ProductMapper.ToDto(stockEntity.Product),
@@ -42,7 +38,6 @@ public class StockMapper
 
     public static StockEntity ToEntity(StockResponseDto stockResponseDto)
     {
-        if (stockResponseDto == null) return new StockEntity();
         
         return new StockEntity
         {
@@ -56,8 +51,6 @@ public class StockMapper
     
     public static StockEntity ToCreateEntity(StockCreateDTO stockCreateDTO, decimal produtUnitPrice)
     {
-        if (stockCreateDTO == null) return new StockEntity();
-        
         return new StockEntity
         {
             Id = Guid.NewGuid(),

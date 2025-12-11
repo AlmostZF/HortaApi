@@ -6,20 +6,20 @@ using DDDPractice.Application.Shared;
 
 namespace DDDPractice.Application.UseCases;
 
-public class UpdateUserUseCase
+public class UpdateCustomerUseCase
 {
-    private readonly IUserService _userService;
+    private readonly ICustomerService _customerService;
 
-    public UpdateUserUseCase(IUserService userService)
+    public UpdateCustomerUseCase(ICustomerService customerService)
     {
-        _userService = userService;
+        _customerService = customerService;
     }
 
-    public async Task<Result> ExecuteAsync(UserUpdateDto userUpdateDTO)
+    public async Task<Result> ExecuteAsync(CustomerUpdateDto customerUpdateDTO)
     {
         try
         {
-            await _userService.UpdateAsync(userUpdateDTO);
+            await _customerService.UpdateAsync(customerUpdateDTO);
 
             return Result.Success("Usuário atualizado com sucesso", 200);
         }

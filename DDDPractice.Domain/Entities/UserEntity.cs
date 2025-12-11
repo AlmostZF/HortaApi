@@ -1,17 +1,15 @@
 using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.Domain.Entities;
 
 namespace DDD_Practice.DDDPractice.Domain.Entities;
 
-public class UserEntity
+public class CustomerEntity: SystemUserEntity
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string PhoneNumber { get; set; }
     public SecurityCode SecurityCode { get; private set; }
-    protected UserEntity() { }
-    public UserEntity(SecurityCode securityCode)
+    protected CustomerEntity() { }
+    public CustomerEntity(string? name, string? phoneNumber, SecurityCode securityCode):base(name, phoneNumber)
     {
-        SecurityCode = securityCode;
+        SecurityCode = securityCode ?? throw new ArgumentNullException(nameof(securityCode));
     }
     
 }

@@ -10,7 +10,6 @@ public class OrderReservationMapper
 {
     public static OrderReservationResponseDto ToDto(OrderReservationEntity orderReservationEntity)
     {
-        if (orderReservationEntity == null) return new OrderReservationResponseDto();
         
         return new OrderReservationResponseDto
         {
@@ -27,7 +26,7 @@ public class OrderReservationMapper
             ReservationDate = orderReservationEntity.ReservationDate,
             ReservationFee = orderReservationEntity.ReservationFee,
             ValueTotal = orderReservationEntity.ValueTotal,
-            UserResponse = UserMapper.ToDto(orderReservationEntity.User),
+            UserResponse = CustomerMapper.ToDto(orderReservationEntity.Customer),
             listOrderItens = OrderReservationItemMapper.ToDtoList(orderReservationEntity.ListOrderItems)
         };
 
@@ -40,7 +39,6 @@ public class OrderReservationMapper
 
     public static OrderCalculateResponseDto ToCalculatedOrderDTO(ICollection<OrderReservationItemEntity> itensCollection, decimal fee, decimal totalValue)
     {
-        if (itensCollection == null) return new OrderCalculateResponseDto();
         
         var orderCalculateResponse = new OrderCalculateResponseDto();
         orderCalculateResponse.Fee = fee;
@@ -69,8 +67,6 @@ public class OrderReservationMapper
 
     public static OrderReservationEntity ToEntity(OrderReservationResponseDto orderReservationResponseDto)
     {
-        if (orderReservationResponseDto == null) return new OrderReservationEntity();
-        
         var order =  new OrderReservationEntity
         {
             Id = Guid.NewGuid(),
@@ -122,7 +118,6 @@ public class OrderReservationMapper
     }
     public static OrderReservationEntity ToCreateEntity(OrderReservationCreateDTO orderReservationCreateDto, decimal reservationFee, decimal total)
     {
-        if (orderReservationCreateDto == null) return new OrderReservationEntity();
         try
         {
             var id = Guid.NewGuid();
@@ -152,9 +147,7 @@ public class OrderReservationMapper
             Console.WriteLine(e);
             throw;
         }
-
-
-        return new OrderReservationEntity();
+        
     }
     
     public static List<OrderReservationEntity> ToEntitylist(List<OrderReservationResponseDto> orderReservationDto)

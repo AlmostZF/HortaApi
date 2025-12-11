@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Remove="Interfaces\Implementation\**" />
+    <Compile Remove="Interfaces\IRegisterService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,7 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\Interface\" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.8" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
   </ItemGroup>
 
   <PropertyGroup>

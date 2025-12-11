@@ -1,0 +1,89 @@
+using DDD_Practice.DDDPractice.Domain.Repositories;
+using DDD_Practice.DDDPractice.Infrastructure.Identity;
+using DDDPractice.Application.DTOs.Interface;
+using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
+using Microsoft.AspNetCore.Identity;
+
+namespace DDD_Practice.DDDPractice.Infrastructure.Repositories;
+
+public class AuthRepository : IAuthRepository
+{
+    
+    private readonly UserManager<ApplicationUser> _userManager;
+    public AuthRepository(UserManager<ApplicationUser> userManager)
+    {
+        _userManager = userManager;
+    }
+    
+    public async Task<AuthUserDto?> FindByEmailAsync(string email)
+    {
+        var identityUser = await _userManager.FindByEmailAsync(email);
+
+        if (identityUser == null)
+            return null;
+
+        return new AuthUserDto
+        {
+            Id = identityUser.Id,
+            Email = identityUser.Email,
+            UserName = identityUser.UserName
+        };
+    }
+
+    public async Task<bool> CheckPasswordAsync(AuthUserDto user, string password)
+    {
+        var identityUser = await _userManager.FindByEmailAsync(user.Email);
+
+        return await _userManager.CheckPasswordAsync(identityUser, password);
+    }
+
+    public async Task<IList<string>> GetRolesAsync(AuthUserDto user)
+    {
+        var identityUser = await _userManager.FindByEmailAsync(user.Email);
+
+        return await _userManager.GetRolesAsync(identityUser);
+    }
+
+    public async Task<AuthUserDto?> CreateAsync(RegisterDTO dto, Guid domainId)
+    {
+        
+        var identity = new ApplicationUser()
+        {
+            Email = dto.Email,
+            UserName = dto.Email,
+            Name = dto.Name,
+            SystemUserId = domainId
+        };
+
+        var result = await _userManager.CreateAsync(identity, dto.Password);
+
+        if (!result.Succeeded)  
+        {
+            var errorMessagens = result.Errors.Select(e => e.Description).ToList();
+            var message = string.Join("; ", errorMessagens);
+            throw new Exception(message);
+        }
+
+        return new AuthUserDto
+        {
+            Id = identity.Id,
+            Email = identity.Email,
+            UserName = identity.UserName
+        };
+    }
+
+    public async Task<bool> AddToRoleAsync(string userId, string role)
+    {
+        try
+        {  
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.AddToRoleAsync(user, role);
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+
+    }
+}

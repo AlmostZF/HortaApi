@@ -19,6 +19,52 @@ namespace DDDPractice.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("DDDPractice.Domain.Entities.RefreshTokenEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RefreshToken");
+                });
+
+            modelBuilder.Entity("DDDPractice.Domain.Entities.SystemUserEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable((string)null);
+
+                    b.UseTpcMappingStrategy();
+                });
+
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.OrderReservationItemEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -93,33 +139,11 @@ namespace DDDPractice.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("vish")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("SellerId");
 
                     b.ToTable("Product");
-                });
-
-            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.SellerEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Seller");
                 });
 
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.StockEntity", b =>
@@ -145,25 +169,6 @@ namespace DDDPractice.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Stock");
-                });
-
-            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.UserEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.OrderReservationEntity", b =>
@@ -198,6 +203,221 @@ namespace DDDPractice.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("OrderReservation");
+                });
+
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid?>("SystemUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("SystemUserId")
+                        .IsUnique();
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.CustomerEntity", b =>
+                {
+                    b.HasBaseType("DDDPractice.Domain.Entities.SystemUserEntity");
+
+                    b.ToTable("Customer");
+                });
+
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.SellerEntity", b =>
+                {
+                    b.HasBaseType("DDDPractice.Domain.Entities.SystemUserEntity");
+
+                    b.ToTable("Seller");
                 });
 
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.OrderReservationItemEntity", b =>
@@ -238,41 +458,6 @@ namespace DDDPractice.Infrastructure.Migrations
                     b.Navigation("Seller");
                 });
 
-            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.SellerEntity", b =>
-                {
-                    b.OwnsOne("DDD_Practice.DDDPractice.Domain.ValueObjects.PickupLocation", "PickupLocation", b1 =>
-                        {
-                            b1.Property<Guid>("SellerEntityId")
-                                .HasColumnType("char(36)");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("longtext");
-
-                            b1.Property<string>("Number")
-                                .IsRequired()
-                                .HasColumnType("longtext");
-
-                            b1.Property<string>("State")
-                                .IsRequired()
-                                .HasColumnType("longtext");
-
-                            b1.Property<string>("Street")
-                                .IsRequired()
-                                .HasColumnType("longtext");
-
-                            b1.HasKey("SellerEntityId");
-
-                            b1.ToTable("Seller");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SellerEntityId");
-                        });
-
-                    b.Navigation("PickupLocation")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.StockEntity", b =>
                 {
                     b.HasOne("DDD_Practice.DDDPractice.Domain.Entities.ProductEntity", "Product")
@@ -284,33 +469,9 @@ namespace DDDPractice.Infrastructure.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.UserEntity", b =>
-                {
-                    b.OwnsOne("DDD_Practice.DDDPractice.Domain.ValueObjects.SecurityCode", "SecurityCode", b1 =>
-                        {
-                            b1.Property<Guid>("UserEntityId")
-                                .HasColumnType("char(36)");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("longtext")
-                                .HasColumnName("SecurityCode");
-
-                            b1.HasKey("UserEntityId");
-
-                            b1.ToTable("User");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserEntityId");
-                        });
-
-                    b.Navigation("SecurityCode")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.OrderReservationEntity", b =>
                 {
-                    b.HasOne("DDD_Practice.DDDPractice.Domain.Entities.UserEntity", "User")
+                    b.HasOne("DDD_Practice.DDDPractice.Domain.Entities.CustomerEntity", "Customer")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -345,10 +506,130 @@ namespace DDDPractice.Infrastructure.Migrations
                                 .HasForeignKey("OrderReservationEntityId");
                         });
 
+                    b.Navigation("Customer");
+
                     b.Navigation("PickupLocation")
                         .IsRequired();
+                });
 
-                    b.Navigation("User");
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.HasOne("DDDPractice.Domain.Entities.SystemUserEntity", "SystemUser")
+                        .WithOne()
+                        .HasForeignKey("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", "SystemUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("SystemUser");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+                {
+                    b.HasOne("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.HasOne("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.HasOne("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.HasOne("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.HasOne("DDD_Practice.DDDPractice.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.CustomerEntity", b =>
+                {
+                    b.OwnsOne("DDD_Practice.DDDPractice.Domain.ValueObjects.SecurityCode", "SecurityCode", b1 =>
+                        {
+                            b1.Property<Guid>("CustomerEntityId")
+                                .HasColumnType("char(36)");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasColumnType("longtext")
+                                .HasColumnName("SecurityCode");
+
+                            b1.HasKey("CustomerEntityId");
+
+                            b1.ToTable("Customer");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerEntityId");
+                        });
+
+                    b.Navigation("SecurityCode")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.Entities.SellerEntity", b =>
+                {
+                    b.OwnsOne("DDD_Practice.DDDPractice.Domain.ValueObjects.PickupLocation", "PickupLocation", b1 =>
+                        {
+                            b1.Property<Guid>("SellerEntityId")
+                                .HasColumnType("char(36)");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("longtext");
+
+                            b1.Property<string>("Number")
+                                .IsRequired()
+                                .HasColumnType("longtext");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasColumnType("longtext");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("longtext");
+
+                            b1.HasKey("SellerEntityId");
+
+                            b1.ToTable("Seller");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SellerEntityId");
+                        });
+
+                    b.Navigation("PickupLocation")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DDD_Practice.DDDPractice.Domain.OrderReservationEntity", b =>

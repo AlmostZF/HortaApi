@@ -3,20 +3,20 @@ using DDDPractice.Application.Shared;
 
 namespace DDDPractice.Application.UseCases;
 
-public class DeleteUserUseCase
+public class DeleteCustomerUseCase
 {
-    private readonly IUserService _userService;
+    private readonly ICustomerService _customerService;
 
-    public DeleteUserUseCase(IUserService userService)
+    public DeleteCustomerUseCase(ICustomerService customerService)
     {
-        _userService = userService;
+        _customerService = customerService;
     }
 
     public async Task<Result> ExecuteAsync(Guid id)
     {
         try
         {
-            await _userService.DeleteAsync(id);
+            await _customerService.DeleteAsync(id);
             return Result.Success("Usuário deletado com sucesso",200);
         }
         catch (Exception e)

@@ -82,7 +82,7 @@ public class ProductController: ControllerBase
             : BadRequest(result.Error);
     }
 
-    [HttpGet("search")]
+    [HttpGet("filter")]
     public async Task<IActionResult> Filter([FromQuery] ProductFilterDTO productFilterDto)
     {
         var result = await _filterProductsUseCase.ExecuteAsync(productFilterDto);

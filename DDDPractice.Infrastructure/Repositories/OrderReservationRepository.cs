@@ -19,19 +19,19 @@ public class OrderReservationRepository : IOrderReservationRepository
     public async Task<IEnumerable<OrderReservationEntity>> GetBySecurityCodeAsync(string securityCode)
     {
         return await _context.OrderReservation
-            .Include(o => o.User)
+            .Include(o => o.Customer)
             .Include(o => o.ListOrderItems)
             .ThenInclude(i => i.Seller)
             .Include(o => o.ListOrderItems)
             .ThenInclude(i => i.Product)
-            .Where(o => o.User.SecurityCode.Value == securityCode)
+            .Where(o => o.Customer.SecurityCode.Value == securityCode)
             .ToListAsync();
     }
 
     public async Task<OrderReservationEntity> GetByIdAsync(Guid id)
     {
         var order = await _context.OrderReservation
-            .Include(o => o.User)
+            .Include(o => o.Customer)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(i => i.Seller)
             .Include(o => o.ListOrderItems)
@@ -89,7 +89,7 @@ public class OrderReservationRepository : IOrderReservationRepository
     {
         return await _context.OrderReservation
             .Where(o => o.OrderStatus == status)
-            .Include(o => o.User)
+            .Include(o => o.Customer)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(i => i.Seller)
             .Include(o => o.ListOrderItems)
@@ -100,7 +100,7 @@ public class OrderReservationRepository : IOrderReservationRepository
     public async Task<IEnumerable<OrderReservationEntity>> GetAllAsync()
     {
         return await _context.OrderReservation
-            .Include(o => o.User)
+            .Include(o => o.Customer)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(item => item.Product)
             .Include(o => o.ListOrderItems)

@@ -71,9 +71,9 @@ public class SellerController: ControllerBase
     {
         var result = await _createSellerUseCase.ExecuteAsync(sellerCreateDto);
 
-        return result.Message != null
-            ? Created()
-            : BadRequest(result.Error);    
+        return result.Value != null
+            ? Ok(result.Value)
+            : BadRequest(result.Error);  
     }
     
     [HttpPut]

@@ -8,24 +8,24 @@ using DDDPractice.Application.Mappers;
 
 namespace DDDPractice.Application.Services;
 
-public class UserService: IUserService
+public class CustomerService: ICustomerService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly ICustomerRepository _userRepository;
     
-    public UserService(IUserRepository userRepository)
+    public CustomerService(ICustomerRepository userRepository)
     {
         _userRepository = userRepository;
     }
     
-    public async Task<Guid> CreateAsync(UserCreateDTO userCreateDTO)
+    public async Task<Guid> CreateAsync(CustomerCreateDTO customerCreateDto)
     {
-        var user = UserMapper.ToCreateEntity(userCreateDTO);
+        var user = CustomerMapper.ToCreateEntity(customerCreateDto);
         
         await _userRepository.CreateAsync(user);
         return user.Id;
     }
     
-    public async Task<UserResponseDto> GetByIdAsync(Guid id)
+    public async Task<CustomerResponseDto> GetByIdAsync(Guid id)
     {
         var user = await _userRepository.GetByIdAsync(id);
 
@@ -34,7 +34,7 @@ public class UserService: IUserService
             return null;
         }
         
-        return new UserResponseDto(user.SecurityCode)
+        return new CustomerResponseDto(user.SecurityCode)
         {
             Id = user.Id,
             Name = user.Name,
@@ -42,22 +42,22 @@ public class UserService: IUserService
         };
     }
 
-    public async Task<List<UserResponseDto>> GetAllAsync()
+    public async Task<List<CustomerResponseDto>> GetAllAsync()
     {
         var listUser = await _userRepository.GetAllAsync();
-        return UserMapper.ToDtoList(listUser);
+        return CustomerMapper.ToDtoList(listUser);
     }
     
 
-    public async Task UpdateAsync(UserUpdateDto userUpdateDTO)
+    public async Task UpdateAsync(CustomerUpdateDto CustomerUpdateDTO)
     {
-        var existingUser = await _userRepository.GetByIdAsync(userUpdateDTO.Id);
+        var existingUser = await _userRepository.GetByIdAsync(CustomerUpdateDTO.Id);
         if (existingUser == null)
         {
             throw new InvalidOperationException("Usuário não encontrado.");
         }
         
-        UserMapper.ToUpdateEntity(existingUser, userUpdateDTO);
+        CustomerMapper.ToUpdateEntity(existingUser, CustomerUpdateDTO);
         
         await _userRepository.UpdateAsync(existingUser);
         

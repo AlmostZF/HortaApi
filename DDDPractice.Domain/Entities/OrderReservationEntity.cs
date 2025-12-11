@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using DDD_Practice.DDDPractice.Domain.Entities;
 using DDD_Practice.DDDPractice.Domain.Enums;
 using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.Domain.Entities;
 
 namespace DDD_Practice.DDDPractice.Domain;
 
@@ -22,7 +23,7 @@ public class OrderReservationEntity
     public ICollection<OrderReservationItemEntity> ListOrderItems { get; set; } = new List<OrderReservationItemEntity>();
     
     [ForeignKey(nameof(UserId))]
-    public UserEntity User { get; set; }
+    public CustomerEntity Customer { get; set; }
 }
 
 

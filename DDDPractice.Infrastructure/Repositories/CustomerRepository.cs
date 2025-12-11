@@ -4,39 +4,39 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DDD_Practice.DDDPractice.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class CustomerRepository : ICustomerRepository
 {
     private readonly AppDbContext _context;
 
-    public UserRepository(AppDbContext context)
+    public CustomerRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<UserEntity> GetByIdAsync(Guid id)
+    public async Task<CustomerEntity> GetByIdAsync(Guid id)
     {
-        var user = await _context.User.FindAsync(id);
+        var user = await _context.Customer.FindAsync(id);
         if (user == null)
             throw new Exception("User not found.");
 
         return user;
     }
 
-    public async Task CreateAsync(UserEntity user)
+    public async Task CreateAsync(CustomerEntity user)
     {
-        _context.User.Add(user);
+        _context.Customer.Add(user);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UserEntity user)
+    public async Task UpdateAsync(CustomerEntity user)
     {
-        _context.User.Update(user);
+        _context.Customer.Update(user);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var user = await _context.User.FindAsync(id);
+        var user = await _context.Customer.FindAsync(id);
         if (user == null)
             throw new Exception("User not found.");
 
@@ -44,8 +44,8 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<UserEntity>> GetAllAsync()
+    public async Task<IEnumerable<CustomerEntity>> GetAllAsync()
     {
-        return await _context.User.ToListAsync();
+        return await _context.Customer.ToListAsync();
     }
 }

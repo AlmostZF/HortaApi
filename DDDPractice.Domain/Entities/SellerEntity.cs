@@ -1,16 +1,14 @@
 using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.Domain.Entities;
 
 namespace DDD_Practice.DDDPractice.Domain.Entities;
 
-public class SellerEntity
+public class SellerEntity : SystemUserEntity
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string PhoneNumber { get; set; }
     public PickupLocation PickupLocation { get; private set; }
     protected SellerEntity() { }
-    public SellerEntity(PickupLocation pickupLocation)
+    public SellerEntity(string name, string phoneNumber, PickupLocation pickupLocation):base(name, phoneNumber)
     {
-        PickupLocation = pickupLocation;
+        PickupLocation = pickupLocation ?? throw new ArgumentNullException(nameof(pickupLocation));
     }
 }

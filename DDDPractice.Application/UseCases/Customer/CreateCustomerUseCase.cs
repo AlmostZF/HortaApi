@@ -5,20 +5,20 @@ using DDDPractice.Application.Shared;
 
 namespace DDDPractice.Application.UseCases;
 
-public class CreateUserUseCase
+public class CreateCustomerUseCase
 {
-    private readonly IUserService _userService;
+    private readonly ICustomerService _customerService;
 
-    public CreateUserUseCase(IUserService userService)
+    public CreateCustomerUseCase(ICustomerService customerService)
     {
-        _userService = userService;
+        _customerService = customerService;
     }
 
-    public async Task<Result<Guid>> ExecuteAsync(UserCreateDTO userCreateDTO)
+    public async Task<Result<Guid>> ExecuteAsync(CustomerCreateDTO customerCreateDto)
     {
         try
         {
-            var userID = await _userService.CreateAsync(userCreateDTO);
+            var userID = await _customerService.CreateAsync(customerCreateDto);
             return Result<Guid>.Success(userID,201);
         }
         catch (Exception e)
