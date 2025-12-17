@@ -39,47 +39,27 @@ public class AuthController : ControllerBase
 
     }
 
-    [HttpPost("register/user")]
-    public async Task<IActionResult> RegisterUser([FromBody] CustomerCreateDTO dto)
+    [HttpPost("register/costumer")]
+    public async Task<IActionResult> RegisterCostumer([FromBody] CustomerCreateDTO dto)
     {
+        var result = await _registerUserUseCase.ExecuteAsync(dto);
         
-        var domainUserResult = await _createCustomerUseCase.ExecuteAsync(dto);
-        if (domainUserResult == null)
-            return BadRequest(domainUserResult.Error);
-        
-        return await Register(dto, "User", domainUserResult.Value);
+        return result.Value != null
+            ? Ok(result.Value)
+            : BadRequest(result.Error);
     }
     
     [HttpPost("register/seller")]
     public async Task<IActionResult> RegisterSeller([FromBody] SellerCreateDTO dto)
     {
         
-        var domainUserResult = await _createSellerUseCase.ExecuteAsync(dto);
-        if (domainUserResult == null)
-            return BadRequest(domainUserResult.Error);
+        var result = await _registerUserUseCase.ExecuteAsync(dto);
         
-        return await Register(dto, "Seller", domainUserResult.Value); 
-    }
-    
-    
-    private async Task<IActionResult> Register(ICreateUserDTO dto, string role, Guid domainUserId)
-    {
-        
-        var registerDto = new RegisterDTO
-        {
-            Email = dto.Email,
-            Password = dto.Password,
-            Name = dto.Name
-        };
-        
-        var result = await _registerUserUseCase.ExecuteAsync(registerDto, domainUserId, role);
-        
-        return result != null
-            ? Ok(result)
+        return result.Value != null
+            ? Ok(result.Value)
             : BadRequest(result.Error);
     }
     
-
 
 
 }

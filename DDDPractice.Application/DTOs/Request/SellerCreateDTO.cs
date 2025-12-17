@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using DDD_Practice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.Application.Interfaces;
+using DDDPractice.Application.Shared;
 
 namespace DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 
@@ -16,7 +17,8 @@ public class SellerCreateDTO:ICreateUserDTO
         ErrorMessage = "Senha deve conter: letra maiúscula, letra minúscula, número e caractere especial")] 
     public string Password { get; set; }
     public string Name { get; set; }
-    
+    public UserType UserType { get; set; }
+
     public string PhoneNumber { get; set; }
     public PickupLocation PickupLocation { get; private set; }
     
