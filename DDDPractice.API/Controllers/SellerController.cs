@@ -1,12 +1,10 @@
-using DDDPractice.Application.DTOs;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
-using DDDPractice.Application.Interfaces;
-using DDDPractice.Application.Services;
-using DDDPractice.Application.Shared;
 using DDDPractice.Application.UseCases.Seller;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDDPractice.API.Controllers;
+
 
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -41,9 +39,10 @@ public class SellerController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Admin")] 
     [HttpGet]
     public async Task<IActionResult> getAll()
     {
@@ -52,10 +51,12 @@ public class SellerController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
         
     }
-
+    
+    [Authorize(Roles = "Seller")]
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
@@ -63,9 +64,10 @@ public class SellerController: ControllerBase
 
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SellerCreateDTO sellerCreateDto)
     {
@@ -73,9 +75,10 @@ public class SellerController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);  
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] SellerUpdateDTO sellerUpdateDto)
     {
@@ -83,6 +86,6 @@ public class SellerController: ControllerBase
 
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 }

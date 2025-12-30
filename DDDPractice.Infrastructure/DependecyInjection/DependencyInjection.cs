@@ -1,0 +1,87 @@
+using DDDPractice.Application.Interfaces;
+using DDDPractice.Application.Services;
+using DDDPractice.Application.UseCases;
+using DDDPractice.Application.UseCases.Auth;
+using DDDPractice.Application.UseCases.OrderReservation;
+using DDDPractice.Application.UseCases.Product;
+using DDDPractice.Application.UseCases.Seller;
+using DDDPractice.Application.UseCases.Stock;
+using DDDPractice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Domain.Service;
+using DDDPractice.DDDPractice.Infrastructure.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace DDDPractice.DDDPractice.Infrastructure.DependecyInjection;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    {
+        services.AddScoped<IOrderReservationRepository, OrderReservationRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<ISellerRepository, SellerRepository>();
+        services.AddScoped<IStockRepository, StockRepository>();
+        services.AddScoped<IReservationFeeCalculate, ReservationFeeCalculate>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<IRefreshTokenRespository, RefreshTokenRespository>();
+        
+        return services;
+    }
+
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<CustomerService>();
+        services.AddScoped<IOrderReservationService, OrderReservationService>();
+        services.AddScoped<OrderReservationService>();
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<ProductService>();
+        services.AddScoped<ISellerService, SellerService>();
+        services.AddScoped<SellerService>();
+        services.AddScoped<IStockService, StockService>();
+
+        services.AddScoped<LoginUseCase>();
+        services.AddScoped<LogoutUseCase>();
+        
+        services.AddScoped<CreateCustomerUseCase>();
+        services.AddScoped<UpdateCustomerUseCase>();
+        services.AddScoped<DeleteCustomerUseCase>();
+        services.AddScoped<GetAllCustomerUseCase>();
+        services.AddScoped<GetCustomerUseCase>();
+
+        services.AddScoped<CreateStockUseCase>();
+        services.AddScoped<UpdateQuantityUseCase>();
+        services.AddScoped<GetAllStockUseCase>();
+        services.AddScoped<GetProductStockUseCase>();
+        services.AddScoped<GetStockByProductIdUseCase>();
+
+        services.AddScoped<DeleteSellerUseCase>();
+        services.AddScoped<CreateSellerUseCase>();
+        services.AddScoped<GetAllSellerUseCase>();
+        services.AddScoped<GetSellerUseCase>();
+        services.AddScoped<UpdateSellerUseCase>();
+
+        services.AddScoped<CreateProductUseCase>();
+        services.AddScoped<UpdateProductUseCase>();
+        services.AddScoped<GetAllProductUseCase>();
+        services.AddScoped<GetProductUseCase>();
+        services.AddScoped<DeleteProductUseCase>();
+        services.AddScoped<FilterProductsUseCase>();
+
+        services.AddScoped<CreateOrderUseCase>();
+        services.AddScoped<DeleteOrderUseCase>();
+        services.AddScoped<GetAllOrderUseCase>();
+        services.AddScoped<GetOrderBySecurityCodeUseCase>();
+        services.AddScoped<GetOrderByStatusUseCase>();
+        services.AddScoped<GetOrderUseCase>();
+        services.AddScoped<UpdateOrderUseCase>();
+        services.AddScoped<CalculateOrderUseCase>();
+        services.AddScoped<RefreshUseCase>();
+
+        return services;
+    }
+}

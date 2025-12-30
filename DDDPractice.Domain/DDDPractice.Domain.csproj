@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Remove="Entities\IdentityUser.cs" />
     <Compile Remove="Interface\**" />
+    <Compile Remove="Repositories\ISystemUserRespository.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 
-namespace DDD_Practice.DDDPractice.Domain.Repositories;
+namespace DDDPractice.DDDPractice.Domain.Repositories;
 
 public interface IProductRepository
 {

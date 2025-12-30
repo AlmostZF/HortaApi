@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace DDD_Practice.DDDPractice.Infrastructure.Identity;
+namespace DDDPractice.DDDPractice.Infrastructure.Identity;
 
 public static class IdentitySeeder
 {
     public static async Task SeedRolesAsync(RoleManager<ApplicationRole> roleManager)
     {
-        string[] roles = ["Customer", "Seller"];
+        string[] roles = {"Customer", "Seller"};
 
         foreach (var role in roles)
         {

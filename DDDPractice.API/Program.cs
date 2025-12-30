@@ -1,21 +1,15 @@
 using System.Text;
-using DDD_Practice.DDDPractice.Domain.Repositories;
-using DDD_Practice.DDDPractice.Domain.Service;
-using DDD_Practice.DDDPractice.Infrastructure;
-using DDD_Practice.DDDPractice.Infrastructure.Identity;
-using DDD_Practice.DDDPractice.Infrastructure.Repositories;
+using DDDPractice.API.Middleware;
+using DDDPractice.DDDPractice.Infrastructure;
+using DDDPractice.DDDPractice.Infrastructure.Identity;
 using DDDPractice.Application.Interfaces;
-using DDDPractice.Application.Services;
-using DDDPractice.Application.UseCases;
 using DDDPractice.Application.UseCases.Auth;
-using DDDPractice.Application.UseCases.OrderReservation;
-using DDDPractice.Application.UseCases.Product;
-using DDDPractice.Application.UseCases.Seller;
-using DDDPractice.Application.UseCases.Stock;
+using DDDPractice.DDDPractice.Infrastructure.DependecyInjection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,66 +25,9 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Services
-builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<CustomerService>();
-builder.Services.AddScoped<IOrderReservationService, OrderReservationService>();
-builder.Services.AddScoped<OrderReservationService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<ISellerService, SellerService>();
-builder.Services.AddScoped<SellerService>();
-builder.Services.AddScoped<IStockService, StockService>();
 
-
-// Repositories
-builder.Services.AddScoped<IOrderReservationRepository, OrderReservationRepository>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<ISellerRepository, SellerRepository>();
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-builder.Services.AddScoped<IReservationFeeCalculate, ReservationFeeCalculate>();
-builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-
-// Use Case
-builder.Services.AddScoped<LoginUseCase>();
-builder.Services.AddScoped<RegisterUserUseCase>();
-
-builder.Services.AddScoped<CreateCustomerUseCase>();
-builder.Services.AddScoped<UpdateCustomerUseCase>();
-builder.Services.AddScoped<DeleteCustomerUseCase>();
-builder.Services.AddScoped<GetAllCustomerUseCase>();
-builder.Services.AddScoped<GetCustomerUseCase>();
-
-builder.Services.AddScoped<CreateStockUseCase>();
-builder.Services.AddScoped<UpdateQuantityUseCase>();
-builder.Services.AddScoped<GetAllStockUseCase>();
-builder.Services.AddScoped<GetProductStockUseCase>();
-builder.Services.AddScoped<GetStockByProductIdUseCase>();
-
-builder.Services.AddScoped<DeleteSellerUseCase>();
-builder.Services.AddScoped<CreateSellerUseCase>();
-builder.Services.AddScoped<GetAllSellerUseCase>();
-builder.Services.AddScoped<GetSellerUseCase>();
-builder.Services.AddScoped<UpdateSellerUseCase>();
-
-builder.Services.AddScoped<CreateProductUseCase>();
-builder.Services.AddScoped<UpdateProductUseCase>();
-builder.Services.AddScoped<GetAllProductUseCase>();
-builder.Services.AddScoped<GetProductUseCase>();
-builder.Services.AddScoped<DeleteProductUseCase>();
-builder.Services.AddScoped<FilterProductsUseCase>();
-
-builder.Services.AddScoped<CreateOrderUseCase>();
-builder.Services.AddScoped<DeleteOrderUseCase>();
-builder.Services.AddScoped<GetAllOrderUseCase>();
-builder.Services.AddScoped<GetOrderBySecurityCodeUseCase>();
-builder.Services.AddScoped<GetOrderByStatusUseCase>();
-builder.Services.AddScoped<GetOrderUseCase>();
-builder.Services.AddScoped<UpdateOrderUseCase>();
-builder.Services.AddScoped<CalculateOrderUseCase>();
-
+builder.Services.AddInfrastructure();
+builder.Services.AddApplication();
 
 builder.Services.AddControllers();
 
@@ -100,9 +37,14 @@ builder.Services.AddSwaggerGen();
 
 // DB
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
 
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<RegisterUserUseCase>();
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
@@ -138,6 +80,8 @@ builder.Services.AddAuthorization();
 
 
 var app = builder.Build();
+
+app.UseMiddleware<JwtAuthenticationMiddleware>(jwtSection["key"]);
 
 using (var scope = app.Services.CreateScope())
 {

@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.UseCases.Product;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDDPractice.API.Controllers;
@@ -39,8 +41,9 @@ public class ProductController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
+    
     
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -49,9 +52,10 @@ public class ProductController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
-
+    
+    [Authorize(Roles = "Seller")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute]Guid id)
     {
@@ -59,9 +63,10 @@ public class ProductController: ControllerBase
 
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody]ProductCreateDTO productCreateDTO)
     {
@@ -69,17 +74,26 @@ public class ProductController: ControllerBase
 
         return result.Value != null
             ? Created($"/api/products/{result.Value}",result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]ProductUpdateDTO productUpdateDto)
     {
+        var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if(string.IsNullOrEmpty(userClaims))
+            return Unauthorized();
+        
+        var currentUserId = Guid.Parse(userClaims);
+        productUpdateDto.SellerId = currentUserId;
+        
         var result = await _updateProductUseCase.ExecuteAsync(productUpdateDto);
 
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 
     [HttpGet("filter")]
@@ -89,7 +103,7 @@ public class ProductController: ControllerBase
         
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
 }

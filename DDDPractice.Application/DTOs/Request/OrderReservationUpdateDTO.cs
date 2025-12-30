@@ -1,5 +1,5 @@
-using DDD_Practice.DDDPractice.Domain.Enums;
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 
 namespace DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 

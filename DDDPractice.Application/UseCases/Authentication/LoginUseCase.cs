@@ -1,11 +1,8 @@
-using DDD_Practice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Domain.Repositories;
 using DDDPractice.Application.DTOs;
-using DDDPractice.Application.DTOs.Interface;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Interfaces;
 using DDDPractice.Application.Shared;
-using Microsoft.AspNetCore.Identity;
-
 namespace DDDPractice.Application.UseCases.Auth;
 
 public class LoginUseCase

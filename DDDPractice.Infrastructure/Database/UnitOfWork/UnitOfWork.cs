@@ -1,7 +1,7 @@
 using DDDPractice.Application.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace DDD_Practice.DDDPractice.Infrastructure;
+namespace DDDPractice.DDDPractice.Infrastructure;
 
 public class UnitOfWork : IUnitOfWork
 {

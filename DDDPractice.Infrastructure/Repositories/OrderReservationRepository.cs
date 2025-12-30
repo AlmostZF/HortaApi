@@ -1,11 +1,11 @@
-using DDD_Practice.DDDPractice.Domain;
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Domain.Enums;
-using DDD_Practice.DDDPractice.Domain.Repositories;
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain;
+using DDDPractice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace DDD_Practice.DDDPractice.Infrastructure.Repositories;
+namespace DDDPractice.DDDPractice.Infrastructure.Repositories;
 
 public class OrderReservationRepository : IOrderReservationRepository
 {

@@ -1,5 +1,6 @@
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.UseCases;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDDPractice.API.Controllers;
@@ -29,7 +30,7 @@ public class CustomerController: ControllerBase
         _getAllCustomerUseCase = getAllCustomerUseCase;
         _getUserUseCase = getUserUseCase;
     }
-    
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -37,7 +38,7 @@ public class CustomerController: ControllerBase
         
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 
     [HttpGet("{id:guid}")]
@@ -49,7 +50,8 @@ public class CustomerController: ControllerBase
             ? Ok(result.Value)
             : BadRequest(result.Error);
     }
-
+    
+    [Authorize(Roles = "Customer")]
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] CustomerUpdateDto customerUpdateDto)
     {
@@ -57,9 +59,10 @@ public class CustomerController: ControllerBase
 
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
-
+    
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CustomerCreateDTO customerCreateDto)
     {
@@ -67,9 +70,10 @@ public class CustomerController: ControllerBase
 
         return result.Value != null
             ? Created()
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
-
+    
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {
@@ -78,6 +82,6 @@ public class CustomerController: ControllerBase
 
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 }

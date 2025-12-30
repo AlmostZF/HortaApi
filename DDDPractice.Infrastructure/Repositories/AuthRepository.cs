@@ -1,10 +1,10 @@
-using DDD_Practice.DDDPractice.Domain.Repositories;
-using DDD_Practice.DDDPractice.Infrastructure.Identity;
 using DDDPractice.Application.DTOs.Interface;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
+using DDDPractice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
-namespace DDD_Practice.DDDPractice.Infrastructure.Repositories;
+namespace DDDPractice.DDDPractice.Infrastructure.Repositories;
 
 public class AuthRepository : IAuthRepository
 {
@@ -85,5 +85,23 @@ public class AuthRepository : IAuthRepository
             return false;
         }
 
+    }
+
+    
+    public async Task<UserAspNetDto?> FindByIdAsync(string userId)
+    {
+        var identityUser = await _userManager.FindByIdAsync(userId);
+        if(identityUser == null)
+            return null;
+        
+        var roles = await _userManager.GetRolesAsync(identityUser);
+        
+        return new UserAspNetDto()
+        {
+            Id = identityUser.Id,
+            Email = identityUser.Email,
+            UserName = identityUser.UserName,
+            Role = roles.ToList()
+        };
     }
 }

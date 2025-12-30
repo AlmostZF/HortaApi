@@ -1,8 +1,8 @@
-using DDD_Practice.DDDPractice.Domain;
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Domain.Enums;
-using DDD_Practice.DDDPractice.Domain.Repositories;
-using DDD_Practice.DDDPractice.Domain.Service;
+using DDDPractice.DDDPractice.Domain;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Domain.Service;
 using DDDPractice.Application.DTOs;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Interfaces;

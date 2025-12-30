@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Domain.Enums;
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.Domain.Entities;
 
-namespace DDD_Practice.DDDPractice.Domain;
+namespace DDDPractice.DDDPractice.Domain;
 
 public class OrderReservationEntity
 {

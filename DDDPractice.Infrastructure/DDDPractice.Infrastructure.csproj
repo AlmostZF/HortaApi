@@ -19,19 +19,17 @@
 
   <ItemGroup>
     <Compile Remove="DDDPractice\**" />
+    <Compile Remove="Database\Migration\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="DDDPractice\**" />
+    <EmbeddedResource Remove="Database\Migration\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="DDDPractice\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Database\Migration\" />
-    <Folder Include="Migrations\" />
+    <None Remove="Database\Migration\**" />
   </ItemGroup>
 
   <PropertyGroup>

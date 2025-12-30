@@ -1,4 +1,4 @@
-using DDD_Practice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.Entities;
 
 namespace DDDPractice.Application.DTOs;
 

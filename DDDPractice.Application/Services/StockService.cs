@@ -1,6 +1,6 @@
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Domain.Repositories;
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.Application.DTOs;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Interfaces;

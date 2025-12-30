@@ -1,4 +1,4 @@
-namespace DDD_Practice.DDDPractice.Domain.Service;
+namespace DDDPractice.DDDPractice.Domain.Service;
 
 public class ReservationFeeCalculate : IReservationFeeCalculate
 {

@@ -1,4 +1,4 @@
-using DDD_Practice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.Enums;
 using DDDPractice.Application.DTOs;
 using DDDPractice.Application.Services;
 using DDDPractice.Application.Shared;

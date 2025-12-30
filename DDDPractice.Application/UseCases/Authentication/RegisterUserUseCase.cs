@@ -1,4 +1,4 @@
-using DDD_Practice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Domain.Repositories;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Interfaces;
 using DDDPractice.Application.Shared;
@@ -25,18 +25,24 @@ public class RegisterUserUseCase
         _ouw = ouw;
     }
 
-    public async Task<Result<Guid>> ExecuteAsync(ICreateUserDTO dto)
+    public async Task<Result<Guid>> ExecuteAsync(ICreateUserDTO dto, UserType type)
     {
         await _ouw.BeginTransactionAsync();
         try
         {
-            var domainUser = dto.UserType switch
+            var domainUser = type switch
             {
                 UserType.Customer => await _createCustomerUseCase.ExecuteAsync((CustomerCreateDTO)dto),
                 UserType.Seller => await _createSellerUseCase.ExecuteAsync((SellerCreateDTO)dto),
                 _ => Result<Guid>.Failure("Tipo de usuário inválido", 400)
             };
 
+            if (!domainUser.IsSuccess)
+            {
+                await _ouw.RollbackAsync();
+                return domainUser;
+            }
+            
             var registerDto = new RegisterDTO
             {
                 Email = dto.Email,
@@ -45,23 +51,23 @@ public class RegisterUserUseCase
             };
             
             var authUserDto = await _authRepository.CreateAsync(registerDto, domainUser.Value);
-
+            
             if (authUserDto == null)
             {
                 await _ouw.RollbackAsync();
-                return Result<Guid>.Failure("Erro ao criar usuário de autenticação.");
+                return Result<Guid>.Failure("Erro ao criar usuário de autenticação.", 400);
             }
             
-            await _authRepository.AddToRoleAsync(authUserDto.Id.ToString(), dto.UserType.ToString());
+            await _authRepository.AddToRoleAsync(authUserDto.Id.ToString(), type.ToString());
 
             await _ouw.CommitAsync();
-
             return Result<Guid>.Success(authUserDto.Id, 201);
         }
         catch (Exception e)
         {   
             await _ouw.RollbackAsync();
-            return Result<Guid>.Failure("Erro ao registrar usuário.");
+
+            return Result<Guid>.Failure("Erro ao registrar usuário.",500);
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace DDD_Practice.DDDPractice.Domain.ValueObjects;
+namespace DDDPractice.DDDPractice.Domain.ValueObjects;
 
 public class SecurityCode
 {

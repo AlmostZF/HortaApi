@@ -1,8 +1,8 @@
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Domain.Repositories;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace DDD_Practice.DDDPractice.Infrastructure.Repositories;
+namespace DDDPractice.DDDPractice.Infrastructure.Repositories;
 
 public class SellerRepository: ISellerRepository
 {

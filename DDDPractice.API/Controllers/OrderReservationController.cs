@@ -1,8 +1,9 @@
-using DDD_Practice.DDDPractice.Domain.Enums;
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Shared;
 using DDDPractice.Application.UseCases.OrderReservation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDDPractice.API.Controllers;
@@ -41,7 +42,7 @@ public class OrderReservationController: ControllerBase
         _updateOrderUseCase = updateOrderUseCase;
         _calculateOrderUseCase = calculateOrderUseCase;
     }
-
+    [Authorize(Roles = "Seller,Customer")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get([FromRoute] Guid id)
     {
@@ -49,9 +50,9 @@ public class OrderReservationController: ControllerBase
             var result = await _getOrderUseCase.ExecuteAsync(id);
             return result.Value != null
                 ? Ok(result.Value)
-                : BadRequest(result.Error);
+                : StatusCode(result.StatusCode, result.Error);
     }
-    
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -59,9 +60,10 @@ public class OrderReservationController: ControllerBase
         var result = await _getAllOrderUseCase.ExecuteAsync();
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller,Customer")]
     [HttpGet("status/{status}")]
     public async Task<IActionResult> GetByStatus([FromRoute] StatusOrder status)
     {
@@ -69,9 +71,10 @@ public class OrderReservationController: ControllerBase
         var result = await _getOrderByStatusUseCase.ExecuteAsync(status);
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller,Customer")]
     [HttpGet("securitycode/{securityCode}")]
     public async Task<IActionResult> GetBySecutityCode([FromRoute] string securityCode)
     {
@@ -79,26 +82,27 @@ public class OrderReservationController: ControllerBase
         var result = await _getOrderBySecurityUseCase.ExecuteAsync(securityCode);
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 
-
+    [Authorize(Roles = "Seller,Customer")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _deleteOrderUseCase.ExecuteAsync(id);
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller,Customer")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody]OrderReservationCreateDTO orderReservationCreateDto)
     {
         var result = await _createOrderUseCase.ExecuteAsync(orderReservationCreateDto);
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
     [HttpPost("pending")]
@@ -107,15 +111,16 @@ public class OrderReservationController: ControllerBase
         var result = await _calculateOrderUseCase.ExecuteAsync(orderCalculateDto);
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller,Customer")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]OrderReservationUpdateDTO orderReservationUpdateDto)
     {
         var result = await _updateOrderUseCase.ExecuteAsync(orderReservationUpdateDto);
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 }

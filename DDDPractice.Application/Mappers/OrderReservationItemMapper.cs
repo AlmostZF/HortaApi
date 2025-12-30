@@ -1,5 +1,5 @@
-using DDD_Practice.DDDPractice.Domain;
-using DDD_Practice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain;
+using DDDPractice.DDDPractice.Domain.Entities;
 using DDDPractice.Application.DTOs;
 
 namespace DDDPractice.Application.Mappers;

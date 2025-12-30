@@ -1,12 +1,11 @@
-
-using DDD_Practice.DDDPractice.Domain;
-using DDD_Practice.DDDPractice.Domain.Entities;
-using DDD_Practice.DDDPractice.Infrastructure.Identity;
+using DDDPractice.DDDPractice.Domain;
+using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Infrastructure.Identity;
 using DDDPractice.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace DDD_Practice.DDDPractice.Infrastructure;
+namespace DDDPractice.DDDPractice.Infrastructure;
 
 public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 {

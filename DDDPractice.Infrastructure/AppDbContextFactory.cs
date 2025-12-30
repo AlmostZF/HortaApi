@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
-namespace DDD_Practice.DDDPractice.Infrastructure
+namespace DDDPractice.DDDPractice.Infrastructure
 {
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {

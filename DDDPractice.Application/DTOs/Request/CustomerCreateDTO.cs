@@ -17,7 +17,6 @@ public class CustomerCreateDTO:ICreateUserDTO
     public string Password { get; set; }
     public string Name { get; set; }
     
-    public UserType UserType { get; set; }
     public string PhoneNumber { get; set; }
     
 }

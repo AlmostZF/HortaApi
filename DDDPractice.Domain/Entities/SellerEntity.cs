@@ -1,7 +1,7 @@
-using DDD_Practice.DDDPractice.Domain.ValueObjects;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.Domain.Entities;
 
-namespace DDD_Practice.DDDPractice.Domain.Entities;
+namespace DDDPractice.DDDPractice.Domain.Entities;
 
 public class SellerEntity : SystemUserEntity
 {

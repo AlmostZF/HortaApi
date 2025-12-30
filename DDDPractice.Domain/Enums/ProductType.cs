@@ -1,4 +1,4 @@
-namespace DDD_Practice.DDDPractice.Domain.Enums;
+namespace DDDPractice.DDDPractice.Domain.Enums;
 
 public enum ProductType
 {

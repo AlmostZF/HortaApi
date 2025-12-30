@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DDD_Practice.DDDPractice.Domain.Entities;
+namespace DDDPractice.DDDPractice.Domain.Entities;
 
 public class OrderReservationItemEntity
 {

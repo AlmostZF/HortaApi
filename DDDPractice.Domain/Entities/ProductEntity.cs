@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using DDD_Practice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.Enums;
 
-namespace DDD_Practice.DDDPractice.Domain.Entities;
+namespace DDDPractice.DDDPractice.Domain.Entities;
 
 public class ProductEntity
 {

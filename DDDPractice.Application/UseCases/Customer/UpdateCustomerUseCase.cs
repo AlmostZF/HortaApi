@@ -1,4 +1,4 @@
-using DDD_Practice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.Entities;
 using DDDPractice.Application.DTOs;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Interfaces;

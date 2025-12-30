@@ -2,10 +2,12 @@ using DDDPractice.Application.DTOs;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Shared;
 using DDDPractice.Application.UseCases.Stock;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDDPractice.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class StockController: ControllerBase
@@ -37,10 +39,10 @@ public class StockController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
-
+    [Authorize(Roles = "Seller")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
@@ -48,9 +50,11 @@ public class StockController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
 
     }
+    
+    
     [HttpGet("product/{id:guid}")]
     public async Task<IActionResult> GetByProductId([FromRoute] Guid id)
     {
@@ -58,11 +62,11 @@ public class StockController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
 
     }
     
-
+    [Authorize(Roles = "Seller")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StockCreateDTO stockCreateDto)
     {
@@ -70,9 +74,10 @@ public class StockController: ControllerBase
 
         return result.Message != null
             ? Created()
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] StockUpdateDTO stockUpdateDto)
     {
@@ -80,6 +85,6 @@ public class StockController: ControllerBase
         
         return result.Message != null
             ? Ok(result.Message)
-            : BadRequest(result.Error);
+            : StatusCode(result.StatusCode, result.Error);
     }
 }

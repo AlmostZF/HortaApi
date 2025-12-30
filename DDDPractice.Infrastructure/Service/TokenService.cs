@@ -1,9 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using DDDPractice.Application.DTOs;
 using DDDPractice.Application.DTOs.Interface;
+using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.Interfaces;
+using DDDPractice.DDDPractice.Domain.Repositories;
+using DDDPractice.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,10 +20,15 @@ public class TokenService : ITokenService
 {
     private readonly IConfiguration _config;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IRefreshTokenRespository _refreshTokenRespository;
+    private readonly IAuthRepository _authRepository;
     
-    public TokenService(IConfiguration config)
+    public TokenService(IConfiguration config, IRefreshTokenRespository refreshTokenRespository,
+        IAuthRepository authRepository)
     {
         _config = config;
+        _refreshTokenRespository = refreshTokenRespository;
+        _authRepository = authRepository;
     }
     
     public async Task<AuthResponseDto> CreateTokenAsync(AuthUserDto user)
@@ -56,11 +65,90 @@ public class TokenService : ITokenService
 
         var tokenSting = new JwtSecurityTokenHandler().WriteToken(token);
 
+        var refreshToken = await GenerateRefreshToken(user);
+
         return await Task.FromResult(new AuthResponseDto
         {
-            Token = tokenSting,
-            Expiration = token.ValidTo
+            BearerToken = tokenSting,
+            Expiration = token.ValidTo,
+            RefreshToken = refreshToken,
         });
     }
     
+
+    public async Task<bool> LogoutAsync(LogoutDto token)
+    {
+        var hexToken = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token.RefreshToken)));
+        var logout = await _refreshTokenRespository.DeleteAsync(hexToken);
+        return logout;
+    }
+
+    public async Task<AuthResponseDto> RevokeTokenAsync(RefreshTokenDTO refreshToken)
+    {
+        var hexToken = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken.RefreshToken)));
+        
+        var userId = await ValidatedTokenAsync(refreshToken.RefreshToken);
+        if(userId == Guid.Empty)
+            return null;
+        
+        var aspNetUser = await _authRepository.FindByIdAsync(userId.ToString());
+
+        var userDto = new AuthUserDto()
+        {
+            Id = userId,
+            Email = aspNetUser.Email,
+            UserName = aspNetUser.UserName,
+            Roles = aspNetUser.Role,
+            Token = hexToken
+        };
+        return await CreateTokenAsync(userDto);
+    }
+
+    public async Task<Guid> ValidatedTokenAsync(string refreshToken)
+    {
+        var hexToken = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
+        var refreshmentEntity = await _refreshTokenRespository.GetByTokenAsync(hexToken);
+        
+        if (refreshmentEntity is not { IsActive: true })
+            return Guid.Empty;
+        
+        return refreshmentEntity.UserId;
+    }
+    
+    private async Task<string> GenerateRefreshToken(AuthUserDto user)
+    {
+        
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var refreshTokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
+
+        if (!string.IsNullOrEmpty(user.Token))
+        {
+            var oldTokenEntity = await _refreshTokenRespository.GetByTokenAsync(user.Token);
+
+            if (oldTokenEntity != null)
+            {
+                oldTokenEntity.Revoke("Replaced by new token", refreshTokenHash);
+                
+                await _refreshTokenRespository.UpdateAsync(oldTokenEntity);
+                
+            }
+        }
+        
+        var newToken = new RefreshTokenEntity()
+        {
+            UserId = user.Id,
+            AbsoluteExpires = DateTime.UtcNow.AddDays(7),
+            Created = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddDays(1),
+            Token = refreshTokenHash,
+            IsRevoked = false,
+            ReplacedByToken = null,
+            Id = Guid.NewGuid()
+        };
+        await _refreshTokenRespository.CreateAsync(newToken);
+        return refreshToken;
+    }
+    
+    
+
 }

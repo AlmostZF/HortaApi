@@ -1,6 +1,6 @@
-using DDD_Practice.DDDPractice.Domain.Enums;
+using DDDPractice.DDDPractice.Domain.Enums;
 
-namespace DDD_Practice.DDDPractice.Domain.ValueObjects;
+namespace DDDPractice.DDDPractice.Domain.ValueObjects;
 
 public class ProductFilter
 {
