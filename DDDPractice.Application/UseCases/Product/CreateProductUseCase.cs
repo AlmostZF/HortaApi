@@ -23,7 +23,7 @@ public class CreateProductUseCase
         }
         catch (Exception e)
         {
-            return Result<Guid>.Failure("Erro ao criar Produto", 500);
+            return Result<Guid>.Failure(e.Message, 500);
         }
     }
 }

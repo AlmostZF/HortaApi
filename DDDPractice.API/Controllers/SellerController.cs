@@ -31,7 +31,8 @@ public class SellerController: ControllerBase
         _updateSellerUseCase = updateSellerUseCase;
         _getSellerUseCase = getSellerUseCase;
     }
-
+    
+    //[Authorize] 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> getById([FromRoute] Guid id)
     {
@@ -42,7 +43,8 @@ public class SellerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Admin")] 
+    //[Authorize(Roles = "Admin")] 
+    [Authorize] 
     [HttpGet]
     public async Task<IActionResult> getAll()
     {

@@ -10,7 +10,12 @@ public class OrderReservationMapper
 {
     public static OrderReservationResponseDto ToDto(OrderReservationEntity orderReservationEntity)
     {
-        
+        var customerResponse = new CustomerResponseDto(orderReservationEntity.SecurityCode)
+        {
+            Id = null,
+            Name = orderReservationEntity.FullName,
+            PhoneNumber = orderReservationEntity.PhoneNumber
+        };
         return new OrderReservationResponseDto
         {
             Id = orderReservationEntity.Id,
@@ -26,7 +31,9 @@ public class OrderReservationMapper
             ReservationDate = orderReservationEntity.ReservationDate,
             ReservationFee = orderReservationEntity.ReservationFee,
             ValueTotal = orderReservationEntity.ValueTotal,
-            UserResponse = CustomerMapper.ToDto(orderReservationEntity.Customer),
+            UserResponse = orderReservationEntity.Customer == null 
+                ? CustomerMapper.ToDto(orderReservationEntity.Customer)
+                : customerResponse,
             listOrderItens = OrderReservationItemMapper.ToDtoList(orderReservationEntity.ListOrderItems)
         };
 
@@ -139,6 +146,10 @@ public class OrderReservationMapper
                 ReservationFee = reservationFee,
                 SecurityCode = orderReservationCreateDto.SecurityCode,
                 UserId = orderReservationCreateDto.UserId,
+                Email = orderReservationCreateDto.Email,
+                FullName = orderReservationCreateDto.FullName,
+                PhoneNumber = orderReservationCreateDto.PhoneNumber,
+                
                 ValueTotal = total
             };
         }

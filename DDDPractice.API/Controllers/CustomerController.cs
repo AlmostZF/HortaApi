@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
 using DDDPractice.Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
@@ -30,10 +31,12 @@ public class CustomerController: ControllerBase
         _getAllCustomerUseCase = getAllCustomerUseCase;
         _getUserUseCase = getUserUseCase;
     }
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
+    [Authorize] 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+        
         var result = await _getAllCustomerUseCase.ExecuteAsync();
         
         return result.Value != null
@@ -41,9 +44,16 @@ public class CustomerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
 
+    [Authorize]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
+        
+        var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if(string.IsNullOrEmpty(userClaims))
+            return Unauthorized();
+        
+        var currentUserId = Guid.Parse(userClaims);
         var result = await _getUserUseCase.ExecuteAsync(id);
 
         return result.Value != null

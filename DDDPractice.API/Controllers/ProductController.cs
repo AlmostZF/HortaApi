@@ -72,7 +72,7 @@ public class ProductController: ControllerBase
     {
         var result = await _createProductUseCase.ExecuteAsync(productCreateDTO);
 
-        return result.Value != null
+        return result.Value != Guid.Empty
             ? Created($"/api/products/{result.Value}",result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }

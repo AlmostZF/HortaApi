@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using DDDPractice.DDDPractice.Domain.Enums;
 using DDDPractice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.Application.DTOs.Request.ProductCreateDTO;
@@ -52,7 +53,8 @@ public class OrderReservationController: ControllerBase
                 ? Ok(result.Value)
                 : StatusCode(result.StatusCode, result.Error);
     }
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -95,14 +97,22 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller,Customer")]
+    [AllowAnonymous]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody]OrderReservationCreateDTO orderReservationCreateDto)
+    public async Task<IActionResult> Create([FromBody] OrderReservationCreateDTO orderReservationCreateDto)
     {
+        // if (User.Identity?.IsAuthenticated == true)
+        // {
+        //     var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //
+        //     if (!string.IsNullOrEmpty(userClaim) && Guid.TryParse(userClaim, out Guid currentUserId))
+        //     {
+        //         orderReservationCreateDto.UserId = currentUserId;
+        //     }
+        // }
         var result = await _createOrderUseCase.ExecuteAsync(orderReservationCreateDto);
-        return result.Message != null
-            ? Ok(result.Message)
-            : StatusCode(result.StatusCode, result.Error);
+        
+        return result.IsSuccess ? Ok(result.Message) : StatusCode(result.StatusCode, result.Error);
     }
     
     [HttpPost("pending")]

@@ -8,7 +8,10 @@ public class OrderReservationCreateDTO
 {
 
     public SecurityCode SecurityCode { get; set; }
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
+    public string Email { get; set; }
+    public string FullName { get; set; }
+    public string PhoneNumber { get; set; }
     public DateTime ReservationDate { get; set; }
     public DateTime PickupDate { get; set; }
     public DateTime PickupDeadline { get; set; }

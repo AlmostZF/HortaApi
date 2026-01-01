@@ -16,13 +16,21 @@ var builder = WebApplication.CreateBuilder(args);
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+    // options.AddPolicy("AllowSpecificOrigin",
+    //     policy =>
+    //     {
+    //         //policy.WithOrigins("http://localhost:4200")
+    //         policy.WithOrigins("AllowAll")
+    //             .AllowAnyHeader()
+    //             .AllowAnyMethod();
+    //     });
+    options.AddPolicy("DevPolicy", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
 
@@ -76,6 +84,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+
 builder.Services.AddAuthorization();
 
 
@@ -97,8 +106,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
-app.UseCors("AllowSpecificOrigin");
+
+
+app.UseCors("DevPolicy");
+//app.UseCors("AllowSpecificOrigin");
 
 app.Run();
 

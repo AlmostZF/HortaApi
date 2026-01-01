@@ -24,7 +24,7 @@ public class OrderReservationRepository : IOrderReservationRepository
             .ThenInclude(i => i.Seller)
             .Include(o => o.ListOrderItems)
             .ThenInclude(i => i.Product)
-            .Where(o => o.Customer.SecurityCode.Value == securityCode)
+            .Where(o => o.SecurityCode.Value == securityCode)
             .ToListAsync();
     }
 

@@ -1,5 +1,6 @@
 using DDDPractice.DDDPractice.Domain;
 using DDDPractice.DDDPractice.Domain.Entities;
+using DDDPractice.DDDPractice.Domain.ValueObjects;
 using DDDPractice.DDDPractice.Infrastructure.Identity;
 using DDDPractice.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -48,9 +49,19 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
         
         modelBuilder.Entity<SellerEntity>()
             .OwnsOne(o => o.PickupLocation);
-        
-        modelBuilder.Entity<OrderReservationEntity>()
-            .OwnsOne(o => o.PickupLocation);
+
+        modelBuilder.Entity<OrderReservationEntity>(entity =>
+        {
+            entity.Property(o => o.SecurityCode)
+                .HasConversion(
+                    v => v != null ? v.Value : null,
+                    v => v != null ? new SecurityCode(v) : null
+                )
+                .HasColumnName("SecurityCode")
+                .IsRequired(false);
+            
+            entity.OwnsOne(o => o.PickupLocation);
+        });
 
     }
 }
