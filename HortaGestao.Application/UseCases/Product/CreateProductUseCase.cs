@@ -1,0 +1,30 @@
+using HortaGestao.Application.DTOs;
+using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
+using HortaGestao.Application.Services;
+using HortaGestao.Application.Shared;
+
+namespace HortaGestao.Application.UseCases.Product;
+
+public class CreateProductUseCase
+{
+    private readonly ProductService _productService;
+
+    public CreateProductUseCase(ProductService productService)
+    {
+        _productService = productService;
+    }
+    
+    public async Task<Result<Guid>> ExecuteAsync(ProductCreateDto productCreateDTO)
+    {
+        try
+        {
+            var guid = await _productService.AddAsync(productCreateDTO);
+            return Result<Guid>.Success( guid,200);
+        }
+        catch (Exception e)
+        {
+            return Result<Guid>.Failure(e.Message, 500);
+        }
+    }
+}

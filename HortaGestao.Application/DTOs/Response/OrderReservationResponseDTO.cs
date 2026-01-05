@@ -1,0 +1,22 @@
+using DDDPractice.DDDPractice.Domain.Enums;
+using HortaGestao.Domain.ValueObjects;
+
+namespace HortaGestao.Application.DTOs.Response;
+
+public class OrderReservationResponseDto
+{
+    public Guid Id { get; set; }
+
+    public DateTime? ReservationDate { get; set; }
+    public DateTime PickupDate { get; set; }
+    public DateTime PickupDeadline { get; set; }
+    public PickupLocation? PickupLocation { get; set; }
+    public decimal ReservationFee { get; set; }
+    public StatusOrder OrderStatus { get; set; }
+    public decimal ValueTotal { get; set; }
+    
+    public IEnumerable<OrderReservationItemResponseDto> listOrderItens { get; set; }
+
+    public CustomerResponseDto UserResponse { get; set; }
+
+}
