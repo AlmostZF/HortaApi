@@ -1,7 +1,6 @@
 
 using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Shared;
 using HortaGestao.Application.UseCases.Authentication;

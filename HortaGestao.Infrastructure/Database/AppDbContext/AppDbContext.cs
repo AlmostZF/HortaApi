@@ -45,9 +45,16 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
                 .IsRequired();
         });
         
-        
         modelBuilder.Entity<SellerEntity>()
-            .OwnsOne(o => o.PickupLocation);
+            .HasMany(s => s.PickupLocations)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PickupLocationEntity>()
+            .OwnsOne(p => p.Address);
+
+        modelBuilder.Entity<PickupLocationEntity>()
+            .OwnsMany(p => p.AvailablePickupDays);
 
         modelBuilder.Entity<OrderReservationEntity>(entity =>
         {
@@ -58,8 +65,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
                 )
                 .HasColumnName("SecurityCode")
                 .IsRequired(false);
-            
-            entity.OwnsOne(o => o.PickupLocation);
         });
 
     }

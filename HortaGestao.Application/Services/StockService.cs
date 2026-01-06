@@ -1,6 +1,5 @@
 using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
@@ -34,7 +33,7 @@ public class StockService : IStockService
         if (stock == null)
             throw new Exception("Erro ao buscar stock por Id");
 
-        stock.Total = StockMoney.CalculateTotal(stock.Product.UnitPrice, stock.Quantity).Amount;
+        stock.CalculateTotal(stock.Product.UnitPrice, stock.Quantity);
         var stockDto = StockMapper.ToDto(stock);
 
         return stockDto;

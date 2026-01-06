@@ -1,6 +1,4 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Domain.Entities;
 
@@ -15,7 +13,7 @@ public class SellerMapper
             Id = sellerEntity.Id,
             Name = sellerEntity.Name ,
             PhoneNumber = sellerEntity.PhoneNumber,
-            PickupLocation = sellerEntity.PickupLocation,
+            PickupLocation = PickupLocationMapper.ToDtoList(sellerEntity.PickupLocations)
         };
 
     }
@@ -24,13 +22,12 @@ public class SellerMapper
     {
         return sellerEntity.Select(ToDto).ToList();
     }
-
+    
 
     public static SellerEntity ToEntity(SellerResponseDto sellerResponseDto)
     {
 
-        return new SellerEntity(sellerResponseDto.Name, sellerResponseDto.PhoneNumber,
-            sellerResponseDto.PickupLocation);
+        return new SellerEntity(sellerResponseDto.Name, sellerResponseDto.PhoneNumber);
     }
     public static void ToUpdateEntity(SellerEntity sellerEntity, SellerUpdateDto sellerUpdateDTO)
     {
@@ -40,8 +37,7 @@ public class SellerMapper
     
     public static SellerEntity ToCreateEntity(SellerCreateDto sellerCreateDTO)
     {
-
-        return new SellerEntity(sellerCreateDTO.Name, sellerCreateDTO.PhoneNumber, sellerCreateDTO.PickupLocation);
+        return new SellerEntity(sellerCreateDTO.Name, sellerCreateDTO.PhoneNumber);
     }
     
 

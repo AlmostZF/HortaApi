@@ -1,5 +1,3 @@
-using HortaGestao.Domain.ValueObjects;
-
 namespace HortaGestao.Application.DTOs.Response;
 
 public class CustomerResponseDto
@@ -8,11 +6,6 @@ public class CustomerResponseDto
     public string Name { get; set; }
     public string PhoneNumber { get; set; }
     
-    public SecurityCode? SecurityCode { get; private set; }
-    
-    public CustomerResponseDto(SecurityCode securityCode)
-    {
-        SecurityCode = securityCode;
-    }
+    public string SecurityCode { get; set; }
     
 }
