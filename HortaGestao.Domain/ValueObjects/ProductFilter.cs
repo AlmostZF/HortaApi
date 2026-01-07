@@ -4,14 +4,14 @@ namespace HortaGestao.Domain.ValueObjects;
 
 public class ProductFilter
 {
-    public ProductType? Category { get; private set; }
+    public string? Category { get; private set; }
     public string? Name { get; private set; }
     public string? Seller { get; private set; }
     public int PageNumber { get; private set; } = 1;
     public int MaxItensPerPage { get; private set; } = 10;
 
     public ProductFilter(
-        ProductType? category,
+        string? category,
         string? name,
         string? seller,
         int? pageNumber,

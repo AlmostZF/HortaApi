@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 
 namespace HortaGestao.Application.DTOs.Request;

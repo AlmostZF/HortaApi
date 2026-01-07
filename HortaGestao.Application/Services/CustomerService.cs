@@ -1,8 +1,5 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Domain.Repositories;
@@ -20,7 +17,7 @@ public class CustomerService: ICustomerService
     
     public async Task<Guid> CreateAsync(CustomerCreateDto customerCreateDto)
     {
-        var user = CustomerMapper.ToCreateEntity(customerCreateDto);
+        var user = CustomerMapper.ToUpdateEntity(customerCreateDto);
         
         await _userRepository.CreateAsync(user);
         return user.Id;
@@ -35,11 +32,12 @@ public class CustomerService: ICustomerService
             return null;
         }
         
-        return new CustomerResponseDto(user.SecurityCode)
+        return new CustomerResponseDto()
         {
             Id = user.Id,
             Name = user.Name,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            SecurityCode = user.GetSecurityCode()
         };
     }
 
@@ -58,7 +56,7 @@ public class CustomerService: ICustomerService
             throw new InvalidOperationException("Usuário não encontrado.");
         }
         
-        CustomerMapper.ToUpdateEntity(existingUser, CustomerUpdateDTO);
+        CustomerMapper.ApplyUpdate(existingUser, CustomerUpdateDTO);
         
         await _userRepository.UpdateAsync(existingUser);
         

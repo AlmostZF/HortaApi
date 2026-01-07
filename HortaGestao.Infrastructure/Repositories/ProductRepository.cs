@@ -1,3 +1,4 @@
+using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.Repositories;
 using HortaGestao.Domain.ValueObjects;
@@ -89,8 +90,13 @@ public class ProductRepository : IProductRepository
         if (!string.IsNullOrEmpty(productFilter.Seller))
             query = query.Where(p => p.Seller.Name.Contains(productFilter.Seller));
 
-        if (productFilter.Category.HasValue)
-            query = query.Where(p => p.ProductType == productFilter.Category.Value);
+        if (!string.IsNullOrEmpty(productFilter.Category))
+        {
+            if (Enum.TryParse<ProductType>(productFilter.Category, ignoreCase: true, out var categoryEnum))
+            {
+                query = query.Where(p => p.ProductType == categoryEnum);
+            }
+        }
 
         return query;
     }

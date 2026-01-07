@@ -11,4 +11,15 @@ public class CustomerEntity: SystemUserEntity
         SecurityCode = securityCode ?? throw new ArgumentNullException(nameof(securityCode));
     }
     
+    public string GetSecurityCode()
+    {
+        return SecurityCode.Value;
+    }
+
+    public void UpdateContact(string name, string phoneNumber)
+    {
+        SetName(name);
+        SetPhoneNumber(phoneNumber);
+    }
+
 }

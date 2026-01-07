@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.UseCases;
 using HortaGestao.Application.UseCases.Customer;
 using Microsoft.AspNetCore.Authorization;

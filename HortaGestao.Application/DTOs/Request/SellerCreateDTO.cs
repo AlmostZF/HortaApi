@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
-using HortaGestao.Domain.ValueObjects;
 
 namespace HortaGestao.Application.DTOs.Request;
 
@@ -19,10 +17,4 @@ public class SellerCreateDto:ICreateUserDto
     public string Name { get; set; }
 
     public string PhoneNumber { get; set; }
-    public PickupLocation PickupLocation { get; private set; }
-    
-    public SellerCreateDto(PickupLocation pickupLocation)
-    {
-        PickupLocation = pickupLocation;
-    }
 }

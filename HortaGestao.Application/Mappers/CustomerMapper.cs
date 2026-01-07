@@ -1,6 +1,5 @@
 using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.ValueObjects;
@@ -11,13 +10,18 @@ public static class CustomerMapper
 {
     public static CustomerResponseDto ToDto(CustomerEntity userEntity)
     {
-        if (userEntity == null) return new CustomerResponseDto(null!);
+        if (userEntity is null)
+            throw new ArgumentNullException(
+                nameof(userEntity),
+                "A entidade Customer não pode ser nula para mapeamento."
+            );
         
-        return new CustomerResponseDto(userEntity.SecurityCode)
+        return new CustomerResponseDto()
         {
             Id = userEntity.Id,
             Name = userEntity.Name,
-            PhoneNumber = userEntity.PhoneNumber
+            PhoneNumber = userEntity.PhoneNumber,
+            SecurityCode = userEntity.GetSecurityCode()
         };
 
     }
@@ -27,30 +31,24 @@ public static class CustomerMapper
         return userEntity.Select(ToDto).ToList();
     }
 
-
-    public static CustomerEntity ToEntity(CustomerResponseDto customerResponseDto)
-    {
-        var securityCode = new SecurityCode(GenerateUniqueCodeFromGuid());
-        return new CustomerEntity(customerResponseDto.Name, customerResponseDto.PhoneNumber, securityCode);
-    }
     
-    public static void ToUpdateEntity(CustomerEntity customerEntity, CustomerUpdateDto customerUpdateDto)
+    public static void ApplyUpdate(CustomerEntity customerEntity, CustomerUpdateDto customerUpdateDto)
     {
-        if (customerUpdateDto == null) return;
+        if (customerUpdateDto == null)
+            throw new ArgumentException("Customer DTO must not be null.");
         
-        customerEntity.SetName(customerUpdateDto.Name);
-        customerEntity.SetPhoneNumber(customerUpdateDto.PhoneNumber);
+        customerEntity.UpdateContact(customerUpdateDto.Name, customerUpdateDto.PhoneNumber);
     }
     
-    public static CustomerEntity ToCreateEntity(CustomerCreateDto customerCreateDto)
+    public static CustomerEntity ToUpdateEntity(CustomerCreateDto customerCreateDto)
     {
         var securityCode = new SecurityCode(GenerateUniqueCodeFromGuid());
         return new CustomerEntity(customerCreateDto.Name, customerCreateDto.PhoneNumber, securityCode);
     }
     
-    public static List<CustomerEntity> ToEntitylist(List<CustomerResponseDto> userDto)
+    public static List<CustomerEntity> ToEntitylist(List<CustomerCreateDto> userDto)
     {
-        return userDto.Select(ToEntity).ToList();
+        return userDto.Select(ToUpdateEntity).ToList();
     }
 
     private static string GenerateUniqueCodeFromGuid(int length = 4)

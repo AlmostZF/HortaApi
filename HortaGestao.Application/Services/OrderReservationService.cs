@@ -1,10 +1,7 @@
-using DDDPractice.DDDPractice.Domain;
+
 using DDDPractice.DDDPractice.Domain.Enums;
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Domain.DomainService;
@@ -39,7 +36,7 @@ public class OrderReservationService : IOrderReservationService
 
     public async Task<OrderReservationResponseDto> GetByIdAsync(Guid id)
     {
-        var orderReservation = await CalculateTotalForOrderAsync(id);
+        var orderReservation = await _orderReservationRepository.GetByIdAsync(id);
         
         return OrderReservationMapper.ToDto(orderReservation);
     }
@@ -59,14 +56,19 @@ public class OrderReservationService : IOrderReservationService
         if (orderReservation == null)
             throw new InvalidOperationException("Reserva não encontrada.");
         
-        var (items, totalValue) = await BuildNewOrderItemsAsync(orderReservationUpdateDTO);
-
+        var (itens, totalValue) = await BuildNewOrderItemsAsync(orderReservationUpdateDTO);
+        
         var fee = _calculate.CalculateFeeCalculate(totalValue);
         
-        if (!orderReservation.ListOrderItems.SequenceEqual(items))
-            orderReservation.ListOrderItems = items;
+        if (!orderReservation.ListOrderItems.SequenceEqual(itens))
+        {
+            foreach (var item in itens)
+            {
+                orderReservation.AddItem(item.Id, item.SellerId, item.Quantity, item.UnitPrice);
+            }
+        }
         
-        OrderReservationMapper.ToUpdateEntity(orderReservation, orderReservationUpdateDTO, items, fee, totalValue );
+        OrderReservationMapper.ToUpdateEntity(orderReservation, orderReservationUpdateDTO, itens, fee);
         
         // OrderReservationMapper.ToUpdateEntity(orderReservation,orderReservationUpdateDTO);
         await _orderReservationRepository.UpdateAsync(orderReservation);
@@ -79,13 +81,17 @@ public class OrderReservationService : IOrderReservationService
 
     public async Task AddAsync(OrderReservationCreateDto orderReservationCreateDto)
     {
-        var (items, totalValue) = await BuildOrderItemsAsync(orderReservationCreateDto);
+        var (itens, totalValue) = await BuildOrderItemsAsync(orderReservationCreateDto);
 
         var fee = _calculate.CalculateFeeCalculate(totalValue);
         
         var orderReservationEntity = OrderReservationMapper.ToCreateEntity(orderReservationCreateDto,fee, totalValue);
-        orderReservationEntity.ListOrderItems = items;
-       
+        
+        foreach (var item in itens)
+        {
+            orderReservationEntity.AddItem(item.Id, item.SellerId, item.Quantity, item.UnitPrice);
+        }
+   
         await _orderReservationRepository.AddAsync(orderReservationEntity);
     }
 
@@ -127,38 +133,10 @@ public class OrderReservationService : IOrderReservationService
                 throw new Exception($"Produto {dto.ProductId} não encontrado.");
 
             var unitPrice = product.UnitPrice;
-            var totalPrice = unitPrice * dto.Quantity;
             
-            total += totalPrice;
-            items.Add(new OrderReservationItemEntity
-            {
-                Id = Guid.NewGuid(),
-                ProductId = dto.ProductId,
-                SellerId = dto.SellerId,
-                Quantity = dto.Quantity,
-                UnitPrice = unitPrice,
-                TotalPrice = totalPrice
-            });
+            items.Add(new OrderReservationItemEntity(Guid.NewGuid(), dto.ProductId, dto.SellerId, dto.Quantity, unitPrice));
         }
         return (items, total);
-    }
-
-    private async Task<OrderReservationEntity> CalculateTotalForOrderAsync(
-        Guid id)
-    {
-        var orderReservation = await _orderReservationRepository.GetByIdAsync(id);
-        var list = orderReservation.ListOrderItems.ToList();
-        
-        decimal totalPrice = 0;
-        
-        foreach (var dto in list)
-        { 
-            totalPrice = dto.TotalPrice;
-            
-        }
-        
-        orderReservation.ValueTotal += totalPrice;
-        return orderReservation;
     }
     
     private async Task<(ICollection<OrderReservationItemEntity> items, decimal total)> BuildNewOrderItemsAsync(
@@ -175,17 +153,8 @@ public class OrderReservationService : IOrderReservationService
                 throw new Exception($"Produto {dto.ProductId} não encontrado.");
 
             var unitPrice = product.UnitPrice;
-            var totalPrice = unitPrice * dto.Quantity;
             
-            total += totalPrice;
-            items.Add(new OrderReservationItemEntity
-            {
-                ProductId = dto.ProductId,
-                SellerId = dto.SellerId,
-                Quantity = dto.Quantity,
-                UnitPrice = unitPrice,
-                TotalPrice = totalPrice
-            });
+            items.Add(new OrderReservationItemEntity(Guid.NewGuid(), dto.ProductId, dto.SellerId, dto.Quantity, unitPrice));
         }
         return (items, total);
     }
@@ -204,19 +173,8 @@ public class OrderReservationService : IOrderReservationService
                 throw new Exception($"Produto {dto.ProductId} não encontrado.");
 
             var unitPrice = product.UnitPrice;
-            var totalPrice = unitPrice * dto.Quantity;
             
-            total += totalPrice;
-            items.Add(new OrderReservationItemEntity
-            {
-                ProductId = dto.ProductId,
-                SellerId = dto.SellerId,
-                Quantity = dto.Quantity,
-                UnitPrice = unitPrice,
-                TotalPrice = totalPrice,
-                Product = product,
-                Seller = product.Seller
-            });
+            items.Add(new OrderReservationItemEntity(Guid.NewGuid(), dto.ProductId, dto.SellerId, dto.Quantity, unitPrice));
         }
         return (items, total);
     }

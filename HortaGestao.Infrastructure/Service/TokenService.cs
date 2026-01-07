@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using HortaGestao.Application.DTOs;
-using HortaGestao.Application.DTOs.Request.ProductCreateDTO;
 using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.DTOs.Authentication;
 using HortaGestao.Application.DTOs.Request;
@@ -134,18 +133,8 @@ public class TokenService : ITokenService
                 
             }
         }
-        
-        var newToken = new RefreshTokenEntity()
-        {
-            UserId = user.Id,
-            AbsoluteExpires = DateTime.UtcNow.AddDays(7),
-            Created = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddDays(1),
-            Token = refreshTokenHash,
-            IsRevoked = false,
-            ReplacedByToken = null,
-            Id = Guid.NewGuid()
-        };
+
+        var newToken = new RefreshTokenEntity(refreshTokenHash, user.Id, false, null);
         await _refreshTokenRespository.CreateAsync(newToken);
         return refreshToken;
     }

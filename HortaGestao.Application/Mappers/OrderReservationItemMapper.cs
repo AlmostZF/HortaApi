@@ -9,7 +9,7 @@ public static class OrderReservationItemMapper
 {
     public static OrderReservationItemResponseDto ToDto(OrderReservationItemEntity orderReservationItemEntity)
     {
-        if (orderReservationItemEntity == null) return new OrderReservationItemResponseDto();
+        if (orderReservationItemEntity == null)  throw new ArgumentException("Order Item must have at least one item.");
         
         return new OrderReservationItemResponseDto
         {
@@ -20,9 +20,9 @@ public static class OrderReservationItemMapper
             SellerId = orderReservationItemEntity.SellerId,
             TotalPrice = orderReservationItemEntity.TotalPrice,
             UnitPrice = orderReservationItemEntity.UnitPrice,
-            Name = orderReservationItemEntity.Product.Name,
-            SellerName = orderReservationItemEntity.Seller.Name,
-            Image = orderReservationItemEntity.Product.Image
+            // Name = orderReservationItemEntity.Product.Name,
+            // SellerName = orderReservationItemEntity.Seller.Name,
+            // Image = orderReservationItemEntity.Product.Image
             // Product = ProductMapper.ToDto(orderReservationItemEntity.Product),
             // Seller = SellerMapper.ToDto(orderReservationItemEntity.Seller)
         };
@@ -37,15 +37,13 @@ public static class OrderReservationItemMapper
 
     public static OrderReservationItemEntity ToEntity(OrderReservationItemResponseDto orderReservationResponseDto)
     {
-        return new OrderReservationItemEntity
-        {
-            Id = Guid.NewGuid(),
-            Quantity = orderReservationResponseDto.Quantity,
-            ProductId = orderReservationResponseDto.ProductId,
-            ReservationId = orderReservationResponseDto.ReservationId.Value,
-            SellerId = orderReservationResponseDto.SellerId,
-            TotalPrice = (orderReservationResponseDto.Quantity * orderReservationResponseDto.UnitPrice),
-            UnitPrice = orderReservationResponseDto.UnitPrice
+        return new OrderReservationItemEntity(
+            orderReservationResponseDto.ReservationId,
+            orderReservationResponseDto.ProductId,
+            orderReservationResponseDto.SellerId,
+            orderReservationResponseDto.Quantity,
+            orderReservationResponseDto.UnitPrice
+            ) {
         };
     }
     

@@ -18,16 +18,15 @@ public class OrderReservationRepository : IOrderReservationRepository
 
     public async Task<IEnumerable<OrderReservationEntity>> GetBySecurityCodeAsync(string securityCode)
     {
+        var code = new SecurityCode(securityCode);
+        
         return await _context.OrderReservation
-            .Include(o => o.Customer)
+            .Include(o=> o.Customer)
             .Include(o => o.ListOrderItems)
-            .ThenInclude(i => i.Seller)
-            .Include(o => o.ListOrderItems)
-            .ThenInclude(i => i.Product)
-            .Where(o => 
-                o.SecurityCode == new SecurityCode(securityCode) || 
-                (o.Customer != null && o.Customer.SecurityCode == new SecurityCode(securityCode))
-            )
+                .ThenInclude(p=>p.Product)
+            .Where(o => o.SecurityCode == code ||
+                        (o.Customer!= null && o.SecurityCode == code)
+                        )
             .ToListAsync();
     }
 
@@ -48,15 +47,19 @@ public class OrderReservationRepository : IOrderReservationRepository
     }
     
 
-    public async Task UpdateStatusAsync(StatusOrder status, Guid id)
+    public async Task UpdateStatusAsync(string status, Guid id)
     {
         var order = await _context.OrderReservation.FindAsync(id);
         if (order == null)
             throw new Exception("Order not found.");
         
-        order.OrderStatus = status;
-        _context.Update(order);
-        await _context.SaveChangesAsync();
+        if (Enum.TryParse<StatusOrder>(status, ignoreCase: true, out var categoryEnum))
+        {
+            order.UpdateOrderStatus(categoryEnum);
+            _context.Update(order);
+            await _context.SaveChangesAsync();
+        }
+
     }
 
     public async Task UpdateAsync(OrderReservationEntity order)

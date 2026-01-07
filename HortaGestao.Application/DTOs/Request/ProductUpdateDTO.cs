@@ -1,4 +1,3 @@
-using DDDPractice.DDDPractice.Domain.Enums;
 
 namespace HortaGestao.Application.DTOs.Request;
 
@@ -6,7 +5,7 @@ public class ProductUpdateDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
-    public ProductType ProductType { get; set; }
+    public string ProductType { get; set; }
     public decimal UnitPrice { get; set; }
     public Guid SellerId { get; set; }
     public string ConservationDays { get; set; }
