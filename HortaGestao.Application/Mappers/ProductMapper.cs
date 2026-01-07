@@ -34,8 +34,8 @@ public class ProductMapper
     
     public static ProductEntity ToCreateEntity(ProductCreateDto productCreateDto)
     {
-        
-        return new ProductEntity( productCreateDto.Name, productCreateDto.ProductType, productCreateDto.UnitPrice,
+        var productType = ProductEntity.StringToProductType(productCreateDto.ProductType); 
+        return new ProductEntity( productCreateDto.Name, productType, productCreateDto.UnitPrice,
             productCreateDto.SellerId, productCreateDto.ConservationDays, productCreateDto.Image,
             productCreateDto.ShortDescription,
             productCreateDto.LargeDescription, productCreateDto.Weight);

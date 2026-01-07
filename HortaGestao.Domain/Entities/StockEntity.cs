@@ -12,7 +12,7 @@ public class StockEntity
     public decimal Total { get; private set; }
     public DateTime MovementDate { get; private set; }
     
-
+    protected StockEntity() { }
     public StockEntity(Guid productId, int initialQuantity)
     {
         if (initialQuantity < 0) throw new ArgumentException("Initial stock quantity cannot be negative.");

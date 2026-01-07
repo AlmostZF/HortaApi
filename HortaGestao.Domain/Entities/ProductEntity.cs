@@ -23,7 +23,7 @@ public class ProductEntity
     
     public bool IsActive { get; private set; }
 
-    public ProductEntity( string name, string productType, decimal unitPrice, Guid sellerId,
+    public ProductEntity( string name, ProductType productType, decimal unitPrice, Guid sellerId,
         string conservationDays, string image, string shortDescription, string largeDescription,
         string weight)
     {
@@ -32,7 +32,7 @@ public class ProductEntity
         
         Id = Guid.NewGuid();
         Name = name;
-        ProductType = StringToProductType(productType);
+        ProductType = productType;
         UnitPrice = unitPrice;
         SellerId = sellerId;
         ConservationDays = conservationDays;
@@ -60,7 +60,7 @@ public class ProductEntity
         IsActive = false;
     }
 
-    public ProductType StringToProductType(string productType)
+    public static ProductType StringToProductType(string productType)
     {
         if (Enum.TryParse<ProductType>(productType, ignoreCase: true, out var categoryEnum))
         {
