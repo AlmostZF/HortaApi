@@ -1,6 +1,6 @@
 namespace HortaGestao.Application.DTOs.Request;
 
-public abstract class OrderReservationItemCreateDto
+public class OrderReservationItemCreateDto
 {
     public Guid ProductId { get; set; }
     public Guid SellerId { get; set; }

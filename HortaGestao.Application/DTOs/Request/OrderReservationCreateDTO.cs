@@ -10,7 +10,6 @@ public class OrderReservationCreateDto
     public string Email { get; set; }
     public string FullName { get; set; }
     public string PhoneNumber { get; set; }
-    public DateTime ReservationDate { get; set; }
     public DateTime PickupDate { get; set; }
     public DateTime PickupDeadline { get; set; }
     
