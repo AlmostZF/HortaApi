@@ -60,6 +60,7 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Product
             .Include(p=> p.Seller)
+            .Where(p => p.IsActive == true)
             .ToListAsync();
     }
 
@@ -84,6 +85,9 @@ public class ProductRepository : IProductRepository
     {
         var query = _context.Product.AsQueryable();
 
+        if(productFilter.OrderByLowestPrice)
+            query = query.OrderBy(p => p.UnitPrice);
+        
         if (!string.IsNullOrEmpty(productFilter.Name))
             query = query.Where(p => p.Name.Contains(productFilter.Name));
 

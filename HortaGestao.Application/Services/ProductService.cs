@@ -22,6 +22,11 @@ public class ProductService: IProductService
     public async Task<ProductResponseDto> GetByIdAsync(Guid id)
     {
         var productEntity = await _productRepository.GetByIdAsync(id);
+
+        if (productEntity == null) throw new InvalidOperationException("Produto não encontrado.");
+        
+        if(! productEntity.IsActive) return null;
+        
         return ProductMapper.ToDto(productEntity);
     }
 
@@ -34,6 +39,18 @@ public class ProductService: IProductService
         }
 
         ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO);    
+        await _productRepository.UpdateAsync(existingProduct);
+    }
+
+    public async Task UpdateStatusAsync(ProductUpdateStatusDto productUpdateStatusDto)
+    {
+        var existingProduct = await _productRepository.GetByIdAsync(productUpdateStatusDto.Id);
+        if (existingProduct == null)
+        {
+            throw new InvalidOperationException("Produto não encontrado.");
+        }
+
+        ProductMapper.ToUpdateStatus(existingProduct, productUpdateStatusDto.IsActive);    
         await _productRepository.UpdateAsync(existingProduct);
     }
 
@@ -52,6 +69,7 @@ public class ProductService: IProductService
     public async Task<List<ProductResponseDto>> GetAllAsync()
     {
         var productEntity = await _productRepository.GetAllAsync();
+        
         return ProductMapper.ToDtoList(productEntity);
     }
 

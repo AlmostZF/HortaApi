@@ -17,7 +17,8 @@ public class StockMapper
             Quantity = stockEntity.Quantity,
             MovementDate = stockEntity.MovementDate,
             ProductId = stockEntity.ProductId,
-            Total = StockMoney.CalculateTotal(stockEntity.Product.UnitPrice, stockEntity.Quantity).Amount,
+            IsActive = stockEntity.Product.IsActive,
+            Total = StockMoney.CalculateTotal(stockEntity.Product.UnitPrice, stockEntity.Quantity).Amount
         };
 
     }
@@ -27,6 +28,7 @@ public class StockMapper
         {
             Product = ProductMapper.ToDto(stockEntity.Product),
             StockLimit = stockEntity.Quantity,
+            IsActive = stockEntity.Product.IsActive
         };
 
     }

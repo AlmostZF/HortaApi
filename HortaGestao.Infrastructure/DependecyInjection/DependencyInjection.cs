@@ -74,6 +74,7 @@ public static class DependencyInjection
         services.AddScoped<GetProductUseCase>();
         services.AddScoped<DeleteProductUseCase>();
         services.AddScoped<FilterProductsUseCase>();
+        services.AddScoped<UpdateProductStatusUseCase>();
 
         services.AddScoped<CreateOrderUseCase>();
         services.AddScoped<DeleteOrderUseCase>();

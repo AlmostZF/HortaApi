@@ -17,6 +17,7 @@ public class ProductController: ControllerBase
     private readonly GetProductUseCase _getProductUseCase;
     private readonly UpdateProductUseCase _updateProductUseCase;
     private readonly FilterProductsUseCase _filterProductsUseCase;
+    private readonly UpdateProductStatusUseCase _updateProductStatusUseCase;
 
     public ProductController(
         CreateProductUseCase createProductUseCase,
@@ -24,6 +25,7 @@ public class ProductController: ControllerBase
         GetAllProductUseCase getAllProductUseCase,
         GetProductUseCase getProductUseCase,
         UpdateProductUseCase updateProductUseCase,
+        UpdateProductStatusUseCase updateProductStatusUseCase,
         FilterProductsUseCase filterProductsUseCase)
     {
         _createProductUseCase = createProductUseCase;
@@ -32,6 +34,7 @@ public class ProductController: ControllerBase
         _getProductUseCase = getProductUseCase;
         _updateProductUseCase = updateProductUseCase;
         _filterProductsUseCase = filterProductsUseCase;
+        _updateProductStatusUseCase = updateProductStatusUseCase;
     }
 
     [HttpGet("{id:guid}")]
@@ -96,6 +99,27 @@ public class ProductController: ControllerBase
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
+    
+    [AllowAnonymous]
+    [Authorize(Roles = "Seller")]
+    [HttpPut("status")]
+    public async Task<IActionResult> Update([FromBody]ProductUpdateStatusDto publiProductUpdateStatusDto)
+    {
+        var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if(string.IsNullOrEmpty(userClaims))
+            return Unauthorized();
+        
+        var currentUserId = Guid.Parse(userClaims);
+        publiProductUpdateStatusDto.SellerId = currentUserId;
+        
+        var result = await _updateProductStatusUseCase.ExecuteAsync(publiProductUpdateStatusDto);
+
+        return result.Message != null
+            ? Ok(result.Message)
+            : StatusCode(result.StatusCode, result.Error);
+    }
+    
     [AllowAnonymous]
     [HttpGet("filter")]
     public async Task<IActionResult> Filter([FromQuery] ProductFilterDto productFilterDto)

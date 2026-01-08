@@ -9,6 +9,7 @@ public class StockResponseDto
     public decimal Total { get; set; }
     
     public DateTime? MovementDate { get; set; }
+    public bool IsActive { get; set; }
 
     public ProductResponseDto? Product { get; set; }
 }

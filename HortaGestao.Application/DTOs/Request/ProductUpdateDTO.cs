@@ -15,6 +15,13 @@ public class ProductUpdateDto
     public string ShortDescription { get; set; }
     
     public string LargeDescription { get; set; }
-    
+
     public string Weight { get; set; }
+}
+
+public class ProductUpdateStatusDto
+{
+    public Guid Id { get; set; }
+    public Guid SellerId { get; set; }
+    public bool IsActive { get; set; }
 }

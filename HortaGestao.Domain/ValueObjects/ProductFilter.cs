@@ -7,6 +7,8 @@ public class ProductFilter
     public string? Category { get; private set; }
     public string? Name { get; private set; }
     public string? Seller { get; private set; }
+
+    public bool OrderByLowestPrice { get; private set; }
     public int PageNumber { get; private set; } = 1;
     public int MaxItensPerPage { get; private set; } = 10;
 
@@ -15,7 +17,8 @@ public class ProductFilter
         string? name,
         string? seller,
         int? pageNumber,
-        int? maxItensPerPage
+        int? maxItensPerPage,
+        bool? orderByLowestPrice
     )
     {
         Category = category;
@@ -23,5 +26,6 @@ public class ProductFilter
         Seller = seller;
         PageNumber = pageNumber ?? 1;
         MaxItensPerPage = maxItensPerPage ?? 10;
+        OrderByLowestPrice = orderByLowestPrice ?? false;
     }
 }

@@ -56,6 +56,12 @@ public class ProductMapper
 
     }
 
+    public static void ToUpdateStatus(ProductEntity productEntity, bool status)
+    {
+        if (status) productEntity.Activate();
+        else productEntity.Deactivate();
+    }
+
     public static ProductFilter toFilter(ProductFilterDto productFilterDto)
     {
         return new ProductFilter(
@@ -63,7 +69,8 @@ public class ProductMapper
             productFilterDto.Name,
             productFilterDto.Seller,
             productFilterDto.PageNumber,
-            productFilterDto.MaxItensPerPage);
+            productFilterDto.MaxItensPerPage,
+            productFilterDto.OrderByLowestPrice);
     }
     
 
