@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     
     public DbSet<OrderReservationItemEntity> OrderReservationItem { get; set; }
     public DbSet<OrderReservationEntity> OrderReservation { get; set; }
+    public DbSet<PickupLocationEntity> PickupLocation { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -69,9 +70,24 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
 
         modelBuilder.Entity<PickupLocationEntity>(entity =>
         {
+            entity.ToTable("PickupLocation");
             entity.HasKey(p => p.Id);
-            entity.OwnsOne(p => p.Address);
-            entity.OwnsMany(p => p.AvailablePickupDays);
+            
+            entity.OwnsOne(p => p.Address, a =>
+            {
+                a.Property(ad => ad.Street).HasColumnName("Address_Street").IsRequired();
+                a.Property(ad => ad.Number).HasColumnName("Address_Number").IsRequired();
+                a.Property(ad => ad.City).HasColumnName("Address_City").IsRequired();
+                a.Property(ad => ad.ZipCode).HasColumnName("Address_ZipCode").IsRequired();
+                a.Property(ad => ad.State).HasColumnName("Address_State").IsRequired();
+                a.Property(ad => ad.Neighborhood).HasColumnName("Address_Neighborhood").IsRequired();
+            });
+            
+            entity.OwnsMany(p => p.AvailablePickupDays, a => 
+            {
+                a.ToTable("PickupDay"); 
+                a.WithOwner().HasForeignKey("PickupLocationId");
+            });
         });
         
 

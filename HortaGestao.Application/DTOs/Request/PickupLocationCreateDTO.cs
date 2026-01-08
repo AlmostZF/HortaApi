@@ -2,6 +2,7 @@ namespace HortaGestao.Application.DTOs.Request;
 
 public class PickupLocationCreateDto
 {
+    public Guid SellerId { get; set; }
     public string Street { get; set; }
     public string Number { get; set; }
     public string City { get; set; }

@@ -4,6 +4,7 @@ using HortaGestao.Application.Services;
 using HortaGestao.Application.UseCases.Authentication;
 using HortaGestao.Application.UseCases.Customer;
 using HortaGestao.Application.UseCases.OrderReservation;
+using HortaGestao.Application.UseCases.PickupLocation;
 using HortaGestao.Application.UseCases.Product;
 using HortaGestao.Application.UseCases.Seller;
 using HortaGestao.Application.UseCases.Stock;
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IRefreshTokenRespository, RefreshTokenRespository>();
+        services.AddScoped<IPickupLocationRespository, PickupLocationRespository>();
         
         return services;
     }
@@ -43,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<ISellerService, SellerService>();
         services.AddScoped<SellerService>();
         services.AddScoped<IStockService, StockService>();
+        services.AddScoped<IPickupLocationService, PickupLocationService>();
 
         services.AddScoped<LoginUseCase>();
         services.AddScoped<LogoutUseCase>();
@@ -81,7 +84,12 @@ public static class DependencyInjection
         services.AddScoped<UpdateOrderUseCase>();
         services.AddScoped<CalculateOrderUseCase>();
         services.AddScoped<RefreshUseCase>();
-
+        
+        services.AddScoped<CreatePickupLocationUseCase>();
+        services.AddScoped<UpdatePickupLocationUseCase>();
+        services.AddScoped<DeletePickupLocationUseCase>();
+        services.AddScoped<GetByIdPickupLocationUseCase>();
+        
         return services;
     }
 }
