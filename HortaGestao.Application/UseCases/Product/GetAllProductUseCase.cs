@@ -1,15 +1,14 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Application.Services;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.Product;
 
 public class GetAllProductUseCase
 {
-    private readonly ProductService _productService;
+    private readonly IProductService _productService;
 
-    public GetAllProductUseCase(ProductService productService)
+    public GetAllProductUseCase(IProductService productService)
     {
         _productService = productService;
     }

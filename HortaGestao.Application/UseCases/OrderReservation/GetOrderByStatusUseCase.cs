@@ -1,16 +1,15 @@
 using DDDPractice.DDDPractice.Domain.Enums;
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Application.Services;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.OrderReservation;
 
 public class GetOrderByStatusUseCase
 {
-    private readonly OrderReservationService _orderReservationService;
+    private readonly IOrderReservationService _orderReservationService;
 
-    public GetOrderByStatusUseCase(OrderReservationService orderReservationService)
+    public GetOrderByStatusUseCase(IOrderReservationService orderReservationService)
     {
         _orderReservationService = orderReservationService;
     }

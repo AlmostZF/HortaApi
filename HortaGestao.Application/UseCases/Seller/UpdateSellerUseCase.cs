@@ -1,15 +1,14 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.Services;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.Seller;
 
 public class UpdateSellerUseCase
 {
-    private readonly SellerService _sellerService;
+    private readonly ISellerService _sellerService;
 
-    public UpdateSellerUseCase(SellerService sellerService)
+    public UpdateSellerUseCase(ISellerService sellerService)
     {
         _sellerService = sellerService;
     }

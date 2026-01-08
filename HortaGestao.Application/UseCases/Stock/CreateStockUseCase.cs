@@ -1,6 +1,4 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 

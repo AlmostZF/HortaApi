@@ -1,15 +1,14 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.Services;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.OrderReservation;
 
 public class UpdateOrderUseCase
 {
-    private readonly OrderReservationService _orderReservationService;
+    private readonly IOrderReservationService _orderReservationService;
 
-    public UpdateOrderUseCase(OrderReservationService orderReservationService)
+    public UpdateOrderUseCase(IOrderReservationService orderReservationService)
     {
         _orderReservationService = orderReservationService;
     }

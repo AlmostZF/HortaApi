@@ -32,7 +32,18 @@ public class PickupLocationMapper
     
     public static PickupLocationEntity ToEntity(PickupLocationCreateDto pickupLocationCreateDto)
     {
-        return new PickupLocationEntity();
+        var address = new Address(
+            pickupLocationCreateDto.Street,
+            pickupLocationCreateDto.Number,
+            pickupLocationCreateDto.City,
+            pickupLocationCreateDto.ZipCode,
+            pickupLocationCreateDto.State,
+            pickupLocationCreateDto.Neighborhood
+        );
+        
+        var availableDays = pickupLocationCreateDto.PickupDays.Select(day => new PickupDay(day));
+        
+        return new PickupLocationEntity(address, availableDays);
     }
     
     public static void ToUpdateEntity(PickupLocationEntity pickupLocationEntity, PickupLocationUpdateDto pickupLocationUpdateDto)

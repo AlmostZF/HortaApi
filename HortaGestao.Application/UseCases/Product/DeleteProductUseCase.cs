@@ -1,13 +1,13 @@
-using HortaGestao.Application.Services;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.Product;
 
 public class DeleteProductUseCase
 {
-    private readonly ProductService _productService;
+    private readonly IProductService _productService;
 
-    public DeleteProductUseCase(ProductService productService)
+    public DeleteProductUseCase(IProductService productService)
     {
         _productService = productService;
     }

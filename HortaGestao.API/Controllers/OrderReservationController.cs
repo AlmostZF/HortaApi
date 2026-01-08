@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.Shared;
 using HortaGestao.Application.UseCases.OrderReservation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

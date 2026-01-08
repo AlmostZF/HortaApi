@@ -47,6 +47,8 @@ public class SellerRepository: ISellerRepository
 
     public async Task<IEnumerable<SellerEntity>> GetAllAsync()
     {
-        return await _context.Seller.ToListAsync();
+        return await _context.Seller
+            .Include(s => s.PickupLocations)
+            .ToListAsync();
     }
 }

@@ -1,13 +1,13 @@
-using HortaGestao.Application.Services;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.Seller;
 
 public class DeleteSellerUseCase
 {
-    private readonly SellerService _sellerService;
+    private readonly ISellerService _sellerService;
 
-    public DeleteSellerUseCase(SellerService sellerService)
+    public DeleteSellerUseCase(ISellerService sellerService)
     {
         _sellerService = sellerService;
     }
