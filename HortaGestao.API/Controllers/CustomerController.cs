@@ -1,12 +1,12 @@
 using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
-using HortaGestao.Application.UseCases;
 using HortaGestao.Application.UseCases.Customer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HortaGestao.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class CustomerController: ControllerBase
@@ -32,8 +32,9 @@ public class CustomerController: ControllerBase
         _getAllCustomerUseCase = getAllCustomerUseCase;
         _getUserUseCase = getUserUseCase;
     }
-    //[Authorize(Roles = "Admin")]
-    [Authorize] 
+    
+    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -42,30 +43,26 @@ public class CustomerController: ControllerBase
         
         return result.Value != null
             ? Ok(result.Value)
-            : StatusCode(result.StatusCode, result.Error);
+            : NotFound();
     }
 
-    [Authorize]
+    [Authorize(Roles = "Customer, Seller")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         
-        var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if(string.IsNullOrEmpty(userClaims))
-            return Unauthorized();
-        
-        var currentUserId = Guid.Parse(userClaims);
         var result = await _getUserUseCase.ExecuteAsync(id);
 
         return result.Value != null
             ? Ok(result.Value)
-            : BadRequest(result.Error);
+            : NotFound();
     }
     
     [Authorize(Roles = "Customer")]
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] CustomerUpdateDto customerUpdateDto)
     {
+
         var result = await _updateCustomerUseCase.ExecuteAsync(customerUpdateDto);
 
         return result.Message != null
@@ -84,7 +81,7 @@ public class CustomerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Customer")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {

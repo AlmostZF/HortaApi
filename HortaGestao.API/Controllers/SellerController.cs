@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HortaGestao.API.Controllers;
 
-
+[Authorize] 
 [ApiController]
 [Route("api/v1/[controller]")]
 public class SellerController: ControllerBase
@@ -32,7 +32,8 @@ public class SellerController: ControllerBase
         _getSellerUseCase = getSellerUseCase;
     }
     
-    //[Authorize] 
+    [Authorize(Roles = "Seller")] 
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> getById([FromRoute] Guid id)
     {
@@ -43,8 +44,7 @@ public class SellerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    //[Authorize(Roles = "Admin")] 
-    [Authorize] 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> getAll()
     {
@@ -69,7 +69,7 @@ public class SellerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SellerCreateDto sellerCreateDto)
     {

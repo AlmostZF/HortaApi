@@ -51,6 +51,7 @@ public class AuthController : ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
+    
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Refresh(RefreshTokenDTO refreshToken)

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HortaGestao.API.Controllers;
 
-[Authorize(Roles = "Seller")]
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class PickupLocationController:ControllerBase
@@ -27,8 +27,7 @@ public class PickupLocationController:ControllerBase
         _getByIdPickupLocationUseCase = getByIdPickupLocationUseCase;
     }
     
-    
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller, Admin")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute]Guid id)
     {
@@ -39,7 +38,7 @@ public class PickupLocationController:ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller, Admin")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody]PickupLocationCreateDto pickupLocationCreateDto)
     {
@@ -50,7 +49,7 @@ public class PickupLocationController:ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller, Admin")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]PickupLocationUpdateDto pickupLocationUpdateDto)
     {
@@ -62,7 +61,7 @@ public class PickupLocationController:ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller, Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute]Guid id)
     {

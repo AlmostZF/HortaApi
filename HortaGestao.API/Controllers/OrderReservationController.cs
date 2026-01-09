@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HortaGestao.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class OrderReservationController: ControllerBase
@@ -40,6 +41,7 @@ public class OrderReservationController: ControllerBase
         _updateOrderUseCase = updateOrderUseCase;
         _calculateOrderUseCase = calculateOrderUseCase;
     }
+    
     [Authorize(Roles = "Seller,Customer")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get([FromRoute] Guid id)
@@ -50,8 +52,9 @@ public class OrderReservationController: ControllerBase
                 ? Ok(result.Value)
                 : StatusCode(result.StatusCode, result.Error);
     }
-    //[Authorize(Roles = "Admin")]
-    [Authorize]
+    
+    [Authorize(Roles = "Admin")]
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -62,11 +65,10 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller,Customer")]
+    [Authorize(Roles = "Seller")]
     [HttpGet("status/{status}")]
     public async Task<IActionResult> GetByStatus([FromRoute] StatusOrder status)
     {
-
         var result = await _getOrderByStatusUseCase.ExecuteAsync(status);
         return result.Value != null
             ? Ok(result.Value)
@@ -84,7 +86,8 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
 
-    [Authorize(Roles = "Seller,Customer")]
+    [Authorize(Roles = "Admin")]
+    [AllowAnonymous]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
@@ -94,6 +97,7 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
+    [Authorize(Roles = "Seller")]
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] OrderReservationCreateDto orderReservationCreateDto)
@@ -112,6 +116,7 @@ public class OrderReservationController: ControllerBase
         return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result.Error);
     }
     
+    [AllowAnonymous]
     [HttpPost("pending")]
     public async Task<IActionResult> Calculate([FromBody]OrderCalculateDto orderCalculateDto)
     {
@@ -121,7 +126,7 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller,Customer")]
+    [Authorize(Roles = "Admin,Customer")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]OrderReservationUpdateDto orderReservationUpdateDto)
     {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HortaGestao.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class ProductController: ControllerBase
@@ -37,6 +38,7 @@ public class ProductController: ControllerBase
         _updateProductStatusUseCase = updateProductStatusUseCase;
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get([FromRoute]Guid id)
     {
@@ -47,7 +49,7 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -58,7 +60,7 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute]Guid id)
     {
@@ -68,7 +70,7 @@ public class ProductController: ControllerBase
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
-    [AllowAnonymous]
+    
     [Authorize(Roles = "Seller")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody]ProductCreateDto productCreateDTO)
@@ -80,7 +82,6 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [AllowAnonymous]
     [Authorize(Roles = "Seller")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]ProductUpdateDto productUpdateDto)
@@ -100,7 +101,6 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [AllowAnonymous]
     [Authorize(Roles = "Seller")]
     [HttpPut("status")]
     public async Task<IActionResult> Update([FromBody]ProductUpdateStatusDto publiProductUpdateStatusDto)

@@ -30,7 +30,7 @@ public class StockController: ControllerBase
         _getStockByProductIdUseCase = getStockByProductIdUseCase;
     }
     
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller")] 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -41,7 +41,6 @@ public class StockController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [AllowAnonymous]
     [Authorize(Roles = "Seller")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
@@ -54,7 +53,7 @@ public class StockController: ControllerBase
 
     }
     
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller")] 
     [HttpGet("product/{id:guid}")]
     public async Task<IActionResult> GetByProductId([FromRoute] Guid id)
     {
@@ -65,7 +64,7 @@ public class StockController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
 
     }
-    [AllowAnonymous]
+    
     [Authorize(Roles = "Seller")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StockCreateDto stockCreateDto)
