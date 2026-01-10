@@ -20,4 +20,10 @@
     <None Remove="Interface\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Features">
+      <HintPath>..\..\..\..\..\..\..\..\home\zf\.nuget\packages\microsoft.aspnetcore.app.ref\8.0.22\ref\net8.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

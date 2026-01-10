@@ -7,12 +7,12 @@ namespace HortaGestao.Application.Services;
 public class StorageService:IStorageService
 {
     private readonly string _rootPath;
-    private readonly string _baseUrl;
+    private readonly string _virtualPath;
     
     public StorageService(IConfiguration configuration)
     {
         _rootPath = configuration["StorageConfig:Path"];
-        _baseUrl = configuration["ApiConfig:BaseUrl"];
+        _virtualPath = configuration["StorageConfig:VirtualPath"];
     }
     
     public async Task<string> SaveFileAsync(IFormFile file,  string containerName)
@@ -21,22 +21,21 @@ public class StorageService:IStorageService
         
         if(!Directory.Exists(targetPath))
             Directory.CreateDirectory(targetPath);
-        
+
         var fileExtension = Path.GetExtension(file.FileName);
         var fileName = Guid.NewGuid() + fileExtension;
         var filePath = Path.Combine(targetPath, fileName);
 
         await using (var FileStream = new FileStream(filePath, FileMode.Create))
             await file.CopyToAsync(FileStream);
-
-        var virtualPath = $"/api/products/image/{fileName}";
         
-        return virtualPath;
+        return GetUrl(containerName, fileName);
     }
 
     public async Task DeleteFileAsync(string fileName, string containerName)
     {
-        var filePath = Path.Combine(_rootPath, containerName, fileName);
+        var fileSplit = fileName.Split("/");
+        var filePath = Path.Combine(_rootPath, containerName, fileSplit[4]);
         if (File.Exists(filePath))
         {
             await Task.Run(() => File.Delete(filePath));
@@ -47,19 +46,18 @@ public class StorageService:IStorageService
     {
         if (file == null || file.Length == 0) return null;
 
-        var targetDirectory = Path.Combine(_rootPath, containerName);
-        if(!Directory.Exists(targetDirectory))
-            Directory.CreateDirectory(targetDirectory);
+        var targetPath = Path.Combine(_rootPath, containerName);
+        if(!Directory.Exists(targetPath))
+            Directory.CreateDirectory(targetPath);
+
         
         var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-        var filePath = Path.Combine(targetDirectory, fileName);
+        var filePath = Path.Combine(targetPath, fileName);
         
         await using (var FileStream = new FileStream(filePath, FileMode.Create))
             await file.CopyToAsync(FileStream);
 
-        var virtualPath = $"/api/products/image/{fileName}";
-
-        return virtualPath;
+        return GetUrl(containerName, fileName);
 
     }
 
@@ -67,11 +65,17 @@ public class StorageService:IStorageService
     {
         var filePath = Path.Combine(_rootPath, containerName, fileName);
         
-        if (!System.IO.File.Exists(filePath))
+        if (!File.Exists(filePath))
         {
-            return null;
+           throw new Exception("not found.");
         }
         
-        return await System.IO.File.ReadAllBytesAsync(fileName);
+        return await File.ReadAllBytesAsync(filePath);
+    }
+    
+    private string GetUrl(string containerName, string fileName)
+    {
+        var fullPath = $"{_virtualPath}/{containerName}/{fileName}";
+        return fullPath;
     }
 }

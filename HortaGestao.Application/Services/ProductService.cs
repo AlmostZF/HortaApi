@@ -4,7 +4,6 @@ using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Application.Shared;
 using HortaGestao.Domain.Repositories;
-using Microsoft.Extensions.Configuration;
 
 namespace HortaGestao.Application.Services;
 
@@ -37,7 +36,10 @@ public class ProductService: IProductService
         {
             throw new InvalidOperationException("Produto não encontrado.");
         }
+        
         var fileName = await _storageService.UploadFileAsync(productUpdateDTO.Image, "products");
+        
+        await _storageService.DeleteFileAsync(existingProduct.Image, "products");
         
         ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO, fileName);    
         await _productRepository.UpdateAsync(existingProduct);

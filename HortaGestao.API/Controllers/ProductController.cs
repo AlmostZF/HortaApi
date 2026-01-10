@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.UseCases.Product;
+using HortaGestao.Application.UseCases.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,7 @@ public class ProductController: ControllerBase
     private readonly UpdateProductUseCase _updateProductUseCase;
     private readonly FilterProductsUseCase _filterProductsUseCase;
     private readonly UpdateProductStatusUseCase _updateProductStatusUseCase;
+    private readonly GetImageUseCase _getImageUseCase;
 
     public ProductController(
         CreateProductUseCase createProductUseCase,
@@ -27,7 +29,8 @@ public class ProductController: ControllerBase
         GetProductUseCase getProductUseCase,
         UpdateProductUseCase updateProductUseCase,
         UpdateProductStatusUseCase updateProductStatusUseCase,
-        FilterProductsUseCase filterProductsUseCase)
+        FilterProductsUseCase filterProductsUseCase,
+        GetImageUseCase getImageUseCase)
     {
         _createProductUseCase = createProductUseCase;
         _deleteProductUseCase = deleteProductUseCase;
@@ -36,6 +39,7 @@ public class ProductController: ControllerBase
         _updateProductUseCase = updateProductUseCase;
         _filterProductsUseCase = filterProductsUseCase;
         _updateProductStatusUseCase = updateProductStatusUseCase;
+        _getImageUseCase = getImageUseCase;
     }
 
     [AllowAnonymous]
@@ -46,6 +50,17 @@ public class ProductController: ControllerBase
 
         return result.Value != null
             ? Ok(result.Value)
+            : StatusCode(result.StatusCode, result.Error);
+    }
+    
+    [AllowAnonymous]
+    [HttpGet("/api/products/{containerName}/{imageString}")]
+    public async Task<IActionResult> GetImage([FromRoute]string containerName, string imageString)
+    {
+        var result = await _getImageUseCase.ExecuteAsync(imageString,containerName);
+
+        return result.Value != null
+            ? File(result.Value, "image/png")
             : StatusCode(result.StatusCode, result.Error);
     }
     
@@ -71,7 +86,7 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [AllowAnonymous]
+    [Authorize(Roles = "Seller")]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm]ProductCreateDto productCreateDTO)

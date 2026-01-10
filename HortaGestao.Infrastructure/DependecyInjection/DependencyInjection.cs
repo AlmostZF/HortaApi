@@ -8,6 +8,7 @@ using HortaGestao.Application.UseCases.PickupLocation;
 using HortaGestao.Application.UseCases.Product;
 using HortaGestao.Application.UseCases.Seller;
 using HortaGestao.Application.UseCases.Stock;
+using HortaGestao.Application.UseCases.Storage;
 using HortaGestao.Domain.DomainService;
 using HortaGestao.Domain.Repositories;
 using HortaGestao.Infrastructure.Repositories;
@@ -91,6 +92,8 @@ public static class DependencyInjection
         services.AddScoped<UpdatePickupLocationUseCase>();
         services.AddScoped<DeletePickupLocationUseCase>();
         services.AddScoped<GetByIdPickupLocationUseCase>();
+
+        services.AddScoped<GetImageUseCase>();
         
         return services;
     }
