@@ -8,8 +8,12 @@ namespace HortaGestao.Application.Mappers;
 
 public class ProductMapper
 {
+    
     public static ProductResponseDto ToDto(ProductEntity productEntity)
     {
+        var baseUrl = "http://localhost:5000/";
+        //TODO remover base URL mocada
+        
         return new ProductResponseDto()
         {
             Id = productEntity.Id,
@@ -18,7 +22,7 @@ public class ProductMapper
             UnitPrice = productEntity.UnitPrice,
             Seller = SellerMapper.ToDto(productEntity.Seller),
             ConservationDays = productEntity.ConservationDays,
-            Image = productEntity.Image,
+            Image = baseUrl + productEntity.Image,
             LargeDescription = productEntity.LargeDescription,
             ShortDescription = productEntity.ShortDescription,
             Weight = productEntity.Weight
@@ -32,16 +36,16 @@ public class ProductMapper
     }
 
     
-    public static ProductEntity ToCreateEntity(ProductCreateDto productCreateDto)
+    public static ProductEntity ToCreateEntity(ProductCreateDto productCreateDto, string imagePath)
     {
         var productType = ProductEntity.StringToProductType(productCreateDto.ProductType); 
         return new ProductEntity( productCreateDto.Name, productType, productCreateDto.UnitPrice,
-            productCreateDto.SellerId, productCreateDto.ConservationDays, productCreateDto.Image,
+            productCreateDto.SellerId, productCreateDto.ConservationDays, imagePath,
             productCreateDto.ShortDescription,
             productCreateDto.LargeDescription, productCreateDto.Weight);
     }
     
-    public static void ToUpdateEntity(ProductEntity productEntity, ProductUpdateDto productUpdateDto)
+    public static void ToUpdateEntity(ProductEntity productEntity, ProductUpdateDto productUpdateDto, string  imagePath)
     {
         productEntity.UpdateProductEntity(
             productUpdateDto.Name,
@@ -49,7 +53,7 @@ public class ProductMapper
             productUpdateDto.UnitPrice,
             productUpdateDto.SellerId,
             productUpdateDto.ConservationDays,
-            productUpdateDto.Image,
+            imagePath,
             productUpdateDto.LargeDescription,
             productUpdateDto.ShortDescription,
             productUpdateDto.Weight);

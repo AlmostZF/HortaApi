@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<SellerService>();
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IPickupLocationService, PickupLocationService>();
+        services.AddScoped<IStorageService, StorageService>();
 
         services.AddScoped<LoginUseCase>();
         services.AddScoped<LogoutUseCase>();

@@ -71,9 +71,10 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [AllowAnonymous]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody]ProductCreateDto productCreateDTO)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Create([FromForm]ProductCreateDto productCreateDTO)
     {
         var result = await _createProductUseCase.ExecuteAsync(productCreateDTO);
 
@@ -84,7 +85,8 @@ public class ProductController: ControllerBase
     
     [Authorize(Roles = "Seller")]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody]ProductUpdateDto productUpdateDto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Update([FromForm]ProductUpdateDto productUpdateDto)
     {
         var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         

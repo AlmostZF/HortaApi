@@ -1,4 +1,6 @@
 
+using Microsoft.AspNetCore.Http;
+
 namespace HortaGestao.Application.DTOs.Request;
 
 public class ProductCreateDto
@@ -10,7 +12,7 @@ public class ProductCreateDto
     
     public string ConservationDays { get; set; }
 
-    public string Image { get; set; }
+    public IFormFile Image { get; set; }
 
     public string ShortDescription { get; set; }
     

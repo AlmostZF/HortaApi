@@ -69,6 +69,8 @@ public class ProductEntity
 
         return categoryEnum;
     }
+    
+    
 
     public void UpdatePrice(decimal newPrice)
     {

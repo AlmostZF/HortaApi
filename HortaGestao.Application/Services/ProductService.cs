@@ -1,11 +1,10 @@
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Application.Shared;
 using HortaGestao.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
 
 namespace HortaGestao.Application.Services;
 
@@ -13,10 +12,11 @@ public class ProductService: IProductService
 {
 
     private readonly IProductRepository _productRepository;
-
-    public ProductService(IProductRepository productRepository)
+    private readonly IStorageService _storageService;
+    public ProductService(IProductRepository productRepository, IStorageService storageService)
     {
         _productRepository = productRepository;
+        _storageService = storageService;
     }
 
     public async Task<ProductResponseDto> GetByIdAsync(Guid id)
@@ -25,7 +25,7 @@ public class ProductService: IProductService
 
         if (productEntity == null) throw new InvalidOperationException("Produto não encontrado.");
         
-        if(! productEntity.IsActive) return null;
+        if(!productEntity.IsActive) return null;
         
         return ProductMapper.ToDto(productEntity);
     }
@@ -37,8 +37,9 @@ public class ProductService: IProductService
         {
             throw new InvalidOperationException("Produto não encontrado.");
         }
-
-        ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO);    
+        var fileName = await _storageService.UploadFileAsync(productUpdateDTO.Image, "products");
+        
+        ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO, fileName);    
         await _productRepository.UpdateAsync(existingProduct);
     }
 
@@ -61,7 +62,8 @@ public class ProductService: IProductService
     
     public async Task<Guid> AddAsync(ProductCreateDto productCreateDTO)
     {
-        var productEntity = ProductMapper.ToCreateEntity(productCreateDTO);
+        var fileName = await _storageService.SaveFileAsync(productCreateDTO.Image, "products");
+        var productEntity = ProductMapper.ToCreateEntity(productCreateDTO, fileName);
         await _productRepository.AddAsync(productEntity);
         return productEntity.Id;
     }
