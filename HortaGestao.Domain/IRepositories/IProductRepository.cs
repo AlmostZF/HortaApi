@@ -1,7 +1,7 @@
 using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.ValueObjects;
 
-namespace HortaGestao.Domain.Repositories;
+namespace HortaGestao.Domain.IRepositories;
 
 public interface IProductRepository
 {

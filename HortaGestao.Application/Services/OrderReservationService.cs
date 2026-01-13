@@ -6,7 +6,7 @@ using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Domain.DomainService;
 using HortaGestao.Domain.Entities;
-using HortaGestao.Domain.Repositories;
+using HortaGestao.Domain.IRepositories;
 
 namespace HortaGestao.Application.Services;
 

@@ -10,7 +10,7 @@ using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Repositories;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Domain.Entities;
-using HortaGestao.Domain.Repositories;
+using HortaGestao.Domain.IRepositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

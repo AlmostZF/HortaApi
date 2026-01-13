@@ -4,7 +4,7 @@ using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
-using HortaGestao.Domain.Repositories;
+using HortaGestao.Domain.IRepositories;
 
 namespace HortaGestao.Application.Services;
 

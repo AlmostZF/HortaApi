@@ -1,6 +1,6 @@
-using DDDPractice.Domain.Entities;
+using HortaGestao.Domain.Entities;
 
-namespace DDDPractice.DDDPractice.Domain.Repositories;
+namespace HortaGestao.Domain.IRepositories;
 
 public interface ISystemUserRespository
 {

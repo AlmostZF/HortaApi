@@ -1,6 +1,6 @@
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Domain.Entities;
-using HortaGestao.Domain.Repositories;
+using HortaGestao.Domain.IRepositories;
 using HortaGestao.Domain.ValueObjects;
 using HortaGestao.Infrastructure.Database.AppDbContext;
 using Microsoft.EntityFrameworkCore;

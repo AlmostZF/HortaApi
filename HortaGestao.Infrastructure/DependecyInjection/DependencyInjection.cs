@@ -10,7 +10,7 @@ using HortaGestao.Application.UseCases.Seller;
 using HortaGestao.Application.UseCases.Stock;
 using HortaGestao.Application.UseCases.Storage;
 using HortaGestao.Domain.DomainService;
-using HortaGestao.Domain.Repositories;
+using HortaGestao.Domain.IRepositories;
 using HortaGestao.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 

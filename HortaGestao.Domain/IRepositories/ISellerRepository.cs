@@ -1,6 +1,6 @@
 using HortaGestao.Domain.Entities;
 
-namespace HortaGestao.Domain.Repositories;
+namespace HortaGestao.Domain.IRepositories;
 
 public interface ISellerRepository
 {

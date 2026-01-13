@@ -1,7 +1,7 @@
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Domain.Entities;
 
-namespace HortaGestao.Domain.Repositories;
+namespace HortaGestao.Domain.IRepositories;
 
 public interface IOrderReservationRepository
 {
