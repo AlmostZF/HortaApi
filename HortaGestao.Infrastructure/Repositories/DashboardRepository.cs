@@ -1,6 +1,5 @@
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Domain.Entities;
 using HortaGestao.Infrastructure.Database.AppDbContext;
 using HortaGestao.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -92,11 +91,27 @@ public class DashboardRepository:IDashboardQueries
 
     public async Task<IEnumerable<LastReservationResponseDto>> GetLastReservations(Guid sellerId, int limit = 10)
     {
-        throw new NotImplementedException();
+        var reservation = _context.OrderReservation
+            .Where(o => o.SellerId == sellerId)
+            .OrderByDescending(r => r.ReservationDate)
+            .Take(limit)
+            .Select(r => new LastReservationResponseDto
+            {
+                CustomerName = r.Customer != null ? r.Customer.Name : r.GuessCustomer.FullName,
+                ItemsCount = r.ListOrderItems.Count(),
+                OrderStatus = r.OrderStatus.ToString(),
+                PickupDeadline = r.PickupDeadline,
+                ReservationDate = r.ReservationDate,
+                ReservationId = r.Id,
+                TotalValue = r.TotalValue,
+            });
+
+        return reservation;
     }
 
     public async Task<IEnumerable<TopProductResponseDto>> GetTopSellingProducts(Guid sellerId, int month, int year)
     {
+        
         throw new NotImplementedException();
     }
     

@@ -1,27 +1,32 @@
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Services;
+using HortaGestao.Infrastructure.Interfaces;
 
 namespace HortaGestao.Application.Services;
 
-public class DashboardService:IDashboardService
+public class DashboardService : IDashboardService
 {
-    public Task<SellerSummaryResponseDto> GetGeneralSummary(Guid sellerId, int month, int year)
+    private readonly IDashboardQueries _dashboardQueries;
+
+    public DashboardService(IDashboardQueries dashboardQueries)
     {
-        throw new NotImplementedException();
+        _dashboardQueries = dashboardQueries;
     }
 
-    public Task<YearlyReportResponseDto> GetYearlyEvolution(Guid sellerId, int year)
+    public async Task<DashboardResponseDto> GetFullDashboardAsync(Guid sellerId, int month, int year, int limit = 10)
     {
-        throw new NotImplementedException();
-    }
+        var summaryTask = await _dashboardQueries.GetGeneralSummary(sellerId, month, year);
+        var lastReservationTask = await _dashboardQueries.GetLastReservations(sellerId, limit);
+        var topSellingProductTask = await _dashboardQueries.GetTopSellingProducts(sellerId, month, year);
+        var yearEvolutioonTask = await _dashboardQueries.GetYearlyEvolution(sellerId, year);
 
-    public Task<IEnumerable<LastReservationResponseDto>> GetLastReservations(Guid sellerId, int limit = 10)
-    {
-        throw new NotImplementedException();
-    }
+        return new DashboardResponseDto()
+        {
+            RecentReservations = lastReservationTask,
+            Summary = summaryTask,
+            TopProducts = topSellingProductTask,
+            YearlyReport = yearEvolutioonTask
+        };
 
-    public Task<IEnumerable<TopProductResponseDto>> GetTopSellingProducts(Guid sellerId, int month, int year)
-    {
-        throw new NotImplementedException();
     }
 }

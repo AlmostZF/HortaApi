@@ -5,8 +5,5 @@ namespace HortaGestao.Application.Interfaces.Services;
 
 public interface IDashboardService
 {
-    public Task<SellerSummaryResponseDto> GetGeneralSummary(Guid sellerId, int month, int year );
-    public Task<YearlyReportResponseDto> GetYearlyEvolution(Guid sellerId, int year);
-    public Task<IEnumerable<LastReservationResponseDto>> GetLastReservations(Guid sellerId, int limit = 10);
-    public Task<IEnumerable<TopProductResponseDto>> GetTopSellingProducts(Guid sellerId, int month, int year);
+    public Task<DashboardResponseDto> GetFullDashboardAsync(Guid sellerId, int month, int year, int limit = 10);
 }
