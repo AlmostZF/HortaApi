@@ -83,7 +83,7 @@ public class OrderReservationMapper
         // orderEntity.ApplyFee(reservationFee);
         
     }
-    public static OrderReservationEntity ToCreateEntity(OrderReservationCreateDto orderReservationCreateDto, decimal reservationFee, decimal total)
+    public static OrderReservationEntity ToCreateEntity(OrderReservationCreateDto orderReservationCreateDto, decimal reservationFee, decimal total, Guid sellerId)
     {
         try
         {
@@ -96,7 +96,8 @@ public class OrderReservationMapper
                     PickupLocationMapper.ToEntity(orderReservationCreateDto.PickupLocation),
                     orderReservationCreateDto.PickupDate,
                     orderReservationCreateDto.PickupDeadline,
-                    reservationFee);
+                    reservationFee,
+                    sellerId);
             }
             
             return OrderReservationEntity.CreateForCustomer(
@@ -104,7 +105,8 @@ public class OrderReservationMapper
                 PickupLocationMapper.ToEntity(orderReservationCreateDto.PickupLocation),
                 orderReservationCreateDto.PickupDate,
                 orderReservationCreateDto.PickupDeadline,
-                reservationFee
+                reservationFee,
+                sellerId
             );
         
 

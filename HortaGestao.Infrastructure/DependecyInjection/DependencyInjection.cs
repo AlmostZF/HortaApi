@@ -3,6 +3,7 @@ using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Services;
 using HortaGestao.Application.UseCases.Authentication;
 using HortaGestao.Application.UseCases.Customer;
+using HortaGestao.Application.UseCases.Dashboard;
 using HortaGestao.Application.UseCases.OrderReservation;
 using HortaGestao.Application.UseCases.PickupLocation;
 using HortaGestao.Application.UseCases.Product;
@@ -11,6 +12,7 @@ using HortaGestao.Application.UseCases.Stock;
 using HortaGestao.Application.UseCases.Storage;
 using HortaGestao.Domain.DomainService;
 using HortaGestao.Domain.IRepositories;
+using HortaGestao.Infrastructure.Interfaces;
 using HortaGestao.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IRefreshTokenRespository, RefreshTokenRespository>();
         services.AddScoped<IPickupLocationRespository, PickupLocationRespository>();
+        services.AddScoped<IDashboardQueries, DashboardRepository>();
         
         return services;
     }
@@ -48,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IStockService, StockService>();
         services.AddScoped<IPickupLocationService, PickupLocationService>();
         services.AddScoped<IStorageService, StorageService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         services.AddScoped<LoginUseCase>();
         services.AddScoped<LogoutUseCase>();
@@ -92,6 +96,8 @@ public static class DependencyInjection
         services.AddScoped<UpdatePickupLocationUseCase>();
         services.AddScoped<DeletePickupLocationUseCase>();
         services.AddScoped<GetByIdPickupLocationUseCase>();
+        
+        services.AddScoped<GetDashboardOverviewUseCase>();
 
         services.AddScoped<GetImageUseCase>();
         

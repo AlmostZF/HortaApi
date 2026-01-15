@@ -15,8 +15,9 @@ public class DasboardController:ControllerBase
     {
         _getDashboardUseCase = getDashboardUseCase;
     }
-
-    [HttpGet]
+    
+    [AllowAnonymous]
+    [HttpGet("{sellerId}/{month}/{year}/{limit}")]
     public async Task<IActionResult> Get([FromRoute] Guid sellerId, int month, int year, int limit)
     {
 

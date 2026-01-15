@@ -64,7 +64,7 @@ public class OrderReservationService : IOrderReservationService
         {
             foreach (var item in itens)
             {
-                orderReservation.AddItem(item.Id, item.SellerId, item.Quantity, item.UnitPrice);
+                orderReservation.AddItem(item.ProductId, item.SellerId, item.Quantity, item.UnitPrice);
             }
         }
         
@@ -85,11 +85,11 @@ public class OrderReservationService : IOrderReservationService
 
         var fee = _calculate.CalculateFeeCalculate(totalValue);
         
-        var orderReservationEntity = OrderReservationMapper.ToCreateEntity(orderReservationCreateDto,fee, totalValue);
+        var orderReservationEntity = OrderReservationMapper.ToCreateEntity(orderReservationCreateDto,fee, totalValue, orderReservationCreateDto.SellerId);
         
         foreach (var item in itens)
         {
-            orderReservationEntity.AddItem(item.Id, item.SellerId, item.Quantity, item.UnitPrice);
+            orderReservationEntity.AddItem(item.ProductId, item.SellerId, item.Quantity, item.UnitPrice);
         }
    
         await _orderReservationRepository.AddAsync(orderReservationEntity);

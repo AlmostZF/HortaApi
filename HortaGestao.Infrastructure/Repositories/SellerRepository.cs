@@ -16,7 +16,10 @@ public class SellerRepository: ISellerRepository
 
     public async Task<SellerEntity> GetByIdAsync(Guid id)
     {
-        var seller = await _context.Seller.FindAsync(id);
+        var seller = await _context.Seller
+            .Include(s => s.PickupLocations)
+            .FirstOrDefaultAsync(s => s.Id == id);
+        
         if (seller == null)
             throw new Exception("Seller not found.");
         

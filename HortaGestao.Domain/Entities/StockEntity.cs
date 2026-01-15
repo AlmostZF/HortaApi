@@ -13,13 +13,14 @@ public class StockEntity
     public DateTime MovementDate { get; private set; }
     
     protected StockEntity() { }
-    public StockEntity(Guid productId, int initialQuantity)
+    public StockEntity(Guid productId, int initialQuantity, decimal unitPrice)
     {
         if (initialQuantity < 0) throw new ArgumentException("Initial stock quantity cannot be negative.");
         Id = Guid.NewGuid();
         ProductId = productId;
         Quantity = initialQuantity;
         MovementDate = DateTime.UtcNow;
+        CalculateTotal(unitPrice, initialQuantity);
     }
 
     public void UpdateStock(Guid productId, decimal unitPrice, int quantity)

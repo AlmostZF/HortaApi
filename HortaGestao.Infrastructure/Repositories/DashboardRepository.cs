@@ -17,32 +17,31 @@ public class DashboardRepository:IDashboardQueries
 
     public async Task<SellerSummaryResponseDto> GetGeneralSummary(Guid sellerId, int month, int year)
     {
-        var reservationsWithSellerItems = await _context.OrderReservation
+        var reservations = await _context.OrderReservation
+            .Where(r => r.SellerId == sellerId)
             .Include(r=>r.ListOrderItems)
             .Where(r => r.ReservationDate.Month == month &&
-                        r.ReservationDate.Year == year &&
-                        r.ListOrderItems.Any(i => i.Seller.Id == sellerId))
+                        r.ReservationDate.Year == year)
             .ToListAsync();
         
         return new SellerSummaryResponseDto
         {
-            TotalReservations = reservationsWithSellerItems.Count,
-            FinishedReservations = reservationsWithSellerItems
+            TotalReservations = reservations.Count,
+            FinishedReservations = reservations
                 .Count(r => r.OrderStatus == StatusOrder.Confirmada),
 
-            PendingReservations = reservationsWithSellerItems
+            PendingReservations = reservations
                 .Count(r => r.OrderStatus == StatusOrder.Pendente),
 
-            CanceledReservations = reservationsWithSellerItems
+            CanceledReservations = reservations
                 .Count(r => r.OrderStatus == StatusOrder.Cancelada),
 
-            ExpiredReservations = reservationsWithSellerItems
+            ExpiredReservations = reservations
                 .Count(r => r.OrderStatus == StatusOrder.Expirada),
 
-            TotalProfit = reservationsWithSellerItems
+            TotalProfit = reservations
                 .Where(o => o.OrderStatus == StatusOrder.Confirmada)
                 .Sum(r => r.ListOrderItems
-                    .Where(i => i.SellerId == sellerId)
                     .Sum(i => i.TotalPrice))
         };
         
@@ -51,9 +50,9 @@ public class DashboardRepository:IDashboardQueries
     public async Task<YearlyReportResponseDto> GetYearlyEvolution(Guid sellerId, int year)
     {
         var reservations = await _context.OrderReservation
+            .Where(r => r.SellerId == sellerId)
             .Include(r=>r.ListOrderItems)
-            .Where(r => r.ReservationDate.Year == year &&
-                        r.ListOrderItems.Any(i => i.Seller.Id == sellerId))
+            .Where(r => r.ReservationDate.Year == year)
             .ToListAsync();
 
         var salesEvolution = reservations
@@ -64,7 +63,6 @@ public class DashboardRepository:IDashboardQueries
                 Label = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key),
                 Quantity = g.Count(),
                 Value = g.Sum(r => r.ListOrderItems
-                    .Where(i => i.SellerId == sellerId)
                     .Sum(i => i.TotalPrice))
             })
             .OrderBy(x => x.Label)
@@ -76,7 +74,6 @@ public class DashboardRepository:IDashboardQueries
             {
                 Quantity = g.Count(),
                 Value = g.Sum(r => r.ListOrderItems
-                    .Where(i => i.SellerId == sellerId)
                     .Sum(i => i.TotalPrice)),
                 Label = g.Key.ToString()
             })
@@ -102,6 +99,7 @@ public class DashboardRepository:IDashboardQueries
                 OrderStatus = r.OrderStatus.ToString(),
                 PickupDeadline = r.PickupDeadline,
                 ReservationDate = r.ReservationDate,
+                PickUpDate = r.PickupDate,
                 ReservationId = r.Id,
                 TotalValue = r.TotalValue,
             });
@@ -111,8 +109,27 @@ public class DashboardRepository:IDashboardQueries
 
     public async Task<IEnumerable<TopProductResponseDto>> GetTopSellingProducts(Guid sellerId, int month, int year)
     {
-        
-        throw new NotImplementedException();
+        var reservation = _context.OrderReservation
+            .Where(o => o.SellerId == sellerId &&
+                        o.OrderStatus == StatusOrder.Confirmada &&
+                        o.ReservationDate.Month == month &&
+                        o.ReservationDate.Year == year)
+            .Include(o => o.ListOrderItems)
+            .SelectMany(r => r.ListOrderItems)
+            .GroupBy(i=> i.ProductId)
+            .Select(g => new TopProductResponseDto
+            {
+                CategoryName = g.First().Product.ProductType.ToString(),
+                ImageUrl = g.First().Product.Image,
+                ProductId = g.First().ProductId,
+                ProductName = g.First().Product.Name,
+                Profit = g.Sum(o=> o.Quantity * o.UnitPrice),
+                quantity = g.First().Quantity,
+                TotalSold = g.Sum(o=> o.Quantity),
+            })
+            .OrderByDescending(dto => dto.Profit);
+            
+        return reservation;
     }
     
 

@@ -17,8 +17,8 @@ public class DashboardService : IDashboardService
     {
         var summaryTask = await _dashboardQueries.GetGeneralSummary(sellerId, month, year);
         var lastReservationTask = await _dashboardQueries.GetLastReservations(sellerId, limit);
-        var topSellingProductTask = await _dashboardQueries.GetTopSellingProducts(sellerId, month, year);
         var yearEvolutioonTask = await _dashboardQueries.GetYearlyEvolution(sellerId, year);
+        var topSellingProductTask = await _dashboardQueries.GetTopSellingProducts(sellerId, month, year);
 
         return new DashboardResponseDto()
         {

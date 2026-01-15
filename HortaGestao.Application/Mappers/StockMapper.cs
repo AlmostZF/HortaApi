@@ -41,7 +41,7 @@ public class StockMapper
     
     public static StockEntity ToCreateEntity(StockCreateDto stockCreateDTO, decimal produtUnitPrice)
     {
-        return new StockEntity(stockCreateDTO.ProductId, stockCreateDTO.Quantity);
+        return new StockEntity(stockCreateDTO.ProductId, stockCreateDTO.Quantity, produtUnitPrice);
 
     }
     

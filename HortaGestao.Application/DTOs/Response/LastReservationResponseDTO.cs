@@ -9,6 +9,7 @@ public class LastReservationResponseDto
     public decimal TotalValue { get; set; }
     public int ItemsCount { get; set; }
     public DateTime ReservationDate { get; set; }
+    public DateTime PickUpDate { get; set; }
     public DateTime PickupDeadline { get; set; }
     
 }

@@ -12,6 +12,7 @@ public class OrderReservationCreateDto
     public string PhoneNumber { get; set; }
     public DateTime PickupDate { get; set; }
     public DateTime PickupDeadline { get; set; }
+    public Guid SellerId { get; set; }
     
     public PickupLocationCreateDto PickupLocation { get; set; }
     
