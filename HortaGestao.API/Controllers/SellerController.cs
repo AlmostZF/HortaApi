@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.UseCases.Seller;
 using Microsoft.AspNetCore.Authorization;
@@ -32,12 +33,16 @@ public class SellerController: ControllerBase
         _getSellerUseCase = getSellerUseCase;
     }
     
-    [Authorize(Roles = "Seller")] 
-    [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> getById([FromRoute] Guid id)
+    [Authorize(Policy = "SellerRights")]
+    [HttpGet]
+    public async Task<IActionResult> getById()
     {
-        var result = await _getSellerUseCase.ExecuteAsync(id);
+        
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _getSellerUseCase.ExecuteAsync(currentUserId);
 
         return result.Value != null
             ? Ok(result.Value)
@@ -45,7 +50,7 @@ public class SellerController: ControllerBase
     }
     
     [Authorize(Roles = "Admin")]
-    [HttpGet]
+    [HttpGet("all")]
     public async Task<IActionResult> getAll()
     {
 
@@ -57,8 +62,7 @@ public class SellerController: ControllerBase
         
     }
     
-    [Authorize(Roles = "Seller")]
-    [Authorize]
+    [Authorize(Policy = "SellerRights")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
@@ -80,7 +84,7 @@ public class SellerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] SellerUpdateDto sellerUpdateDto)
     {

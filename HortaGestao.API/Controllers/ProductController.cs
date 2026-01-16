@@ -86,7 +86,7 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm]ProductCreateDto productCreateDTO)
@@ -98,18 +98,11 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPut]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Update([FromForm]ProductUpdateDto productUpdateDto)
     {
-        var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        
-        if(string.IsNullOrEmpty(userClaims))
-            return Unauthorized();
-        
-        var currentUserId = Guid.Parse(userClaims);
-        productUpdateDto.SellerId = currentUserId;
         
         var result = await _updateProductUseCase.ExecuteAsync(productUpdateDto);
 
@@ -118,18 +111,10 @@ public class ProductController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPut("status")]
     public async Task<IActionResult> Update([FromBody]ProductUpdateStatusDto publiProductUpdateStatusDto)
     {
-        var userClaims = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        
-        if(string.IsNullOrEmpty(userClaims))
-            return Unauthorized();
-        
-        var currentUserId = Guid.Parse(userClaims);
-        publiProductUpdateStatusDto.SellerId = currentUserId;
-        
         var result = await _updateProductStatusUseCase.ExecuteAsync(publiProductUpdateStatusDto);
 
         return result.Message != null

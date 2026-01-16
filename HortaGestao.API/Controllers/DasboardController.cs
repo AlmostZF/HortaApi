@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HortaGestao.Application.UseCases.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +17,16 @@ public class DasboardController:ControllerBase
         _getDashboardUseCase = getDashboardUseCase;
     }
     
-    [AllowAnonymous]
-    [HttpGet("{sellerId}/{month}/{year}/{limit}")]
-    public async Task<IActionResult> Get([FromRoute] Guid sellerId, int month, int year, int limit)
+    [Authorize]
+    [HttpGet("{month}/{year}/{limit}")]
+    public async Task<IActionResult> Get([FromRoute] int month, int year, int limit)
     {
-
-        var result = await _getDashboardUseCase.ExecuteAsync(sellerId, month, year, limit);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _getDashboardUseCase.ExecuteAsync(currentUserId, month, year, limit);
         return result.Value != null
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);

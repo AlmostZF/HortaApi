@@ -11,4 +11,5 @@ public interface IAuthRepository
     Task<AuthUserDto?> CreateAsync(RegisterDto dto, Guid domainId);
     Task<bool> AddToRoleAsync(string userId, string role);
     Task<UserAspNetDto?> FindByIdAsync(string userId);
+    Task<Guid?> GetBusinessIdByIdentityIdAsync(Guid identityId);
 }

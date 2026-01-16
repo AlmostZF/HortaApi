@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.UseCases.PickupLocation;
 using Microsoft.AspNetCore.Authorization;
@@ -27,18 +28,23 @@ public class PickupLocationController:ControllerBase
         _getByIdPickupLocationUseCase = getByIdPickupLocationUseCase;
     }
     
-    [Authorize(Roles = "Seller, Admin")]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute]Guid id)
+    [Authorize(Policy = "SellerRights")]
+    [HttpGet]
+    public async Task<IActionResult> GetById()
     {
-        var result = await _getByIdPickupLocationUseCase.ExecuteAsync(id);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _getByIdPickupLocationUseCase.ExecuteAsync(currentUserId);
         
         return result.Value != null
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
 
-    [Authorize(Roles = "Seller, Admin")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody]PickupLocationCreateDto pickupLocationCreateDto)
     {
@@ -49,7 +55,7 @@ public class PickupLocationController:ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller, Admin")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]PickupLocationUpdateDto pickupLocationUpdateDto)
     {
@@ -61,7 +67,7 @@ public class PickupLocationController:ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller, Admin")]
+    [Authorize(Policy = "SellerRights")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute]Guid id)
     {

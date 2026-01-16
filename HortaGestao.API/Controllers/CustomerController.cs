@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.UseCases.Customer;
 using Microsoft.AspNetCore.Authorization;
@@ -33,7 +32,6 @@ public class CustomerController: ControllerBase
         _getUserUseCase = getUserUseCase;
     }
     
-    [AllowAnonymous]
     [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -46,7 +44,7 @@ public class CustomerController: ControllerBase
             : NotFound();
     }
 
-    [Authorize(Roles = "Customer, Seller")]
+    [Authorize(Roles = "CustomerRights")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
@@ -58,7 +56,7 @@ public class CustomerController: ControllerBase
             : NotFound();
     }
     
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "CustomerRights")]
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] CustomerUpdateDto customerUpdateDto)
     {
@@ -81,7 +79,7 @@ public class CustomerController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "CustomerRights")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
     {

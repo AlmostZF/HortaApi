@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.UseCases.Stock;
 using Microsoft.AspNetCore.Authorization;
@@ -30,22 +31,31 @@ public class StockController: ControllerBase
         _getStockByProductIdUseCase = getStockByProductIdUseCase;
     }
     
-    [Authorize(Roles = "Seller")] 
-    [HttpGet]
+    [Authorize(Policy = "SellerRights")]
+    [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
-        var result = await _getAllStockUseCase.ExecuteAsync();
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _getAllStockUseCase.ExecuteAsync(currentUserId);
 
         return result.Value != null
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var result = await _getProductStockUseCase.ExecuteAsync(id);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _getProductStockUseCase.ExecuteAsync(id, currentUserId);
 
         return result.Value != null
             ? Ok(result.Value)
@@ -53,11 +63,15 @@ public class StockController: ControllerBase
 
     }
     
-    [Authorize(Roles = "Seller")] 
+    [Authorize(Policy = "SellerRights")] 
     [HttpGet("product/{id:guid}")]
     public async Task<IActionResult> GetByProductId([FromRoute] Guid id)
     {
-        var result = await _getStockByProductIdUseCase.ExecuteAsync(id);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _getStockByProductIdUseCase.ExecuteAsync(id,currentUserId);
 
         return result.Value != null
             ? Ok(result.Value)
@@ -65,22 +79,33 @@ public class StockController: ControllerBase
 
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StockCreateDto stockCreateDto)
     {
-        var result = await _createStockUseCase.ExecuteAsync(stockCreateDto);
+        
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _createStockUseCase.ExecuteAsync(stockCreateDto, currentUserId);
 
         return result.Message != null
             ? Created()
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] StockUpdateDto stockUpdateDto)
     {
-        var result = await _updateStockUseCase.ExecuteAsync(stockUpdateDto);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _updateStockUseCase.ExecuteAsync(stockUpdateDto, currentUserId);
         
         return result.Message != null
             ? Ok(result.Message)

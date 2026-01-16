@@ -24,6 +24,7 @@ public class OrderReservationRepository : IOrderReservationRepository
             .Include(o=> o.Customer)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(p=>p.Product)
+            .Include(o=> o.PickupLocation)
             .Where(o => o.SecurityCode == code ||
                         (o.Customer!= null && o.SecurityCode == code)
                         )
@@ -38,7 +39,8 @@ public class OrderReservationRepository : IOrderReservationRepository
                 .ThenInclude(i => i.Seller)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .Include(o=> o.PickupLocation)
+            .FirstOrDefaultAsync(o => o.SellerId == id);
         
         if (order == null)
             throw new Exception("Order not found.");
@@ -100,6 +102,7 @@ public class OrderReservationRepository : IOrderReservationRepository
                 .ThenInclude(i => i.Seller)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(i => i.Product)
+            .Include(o=> o.PickupLocation)
             .ToListAsync();
     }
 
@@ -111,6 +114,7 @@ public class OrderReservationRepository : IOrderReservationRepository
                 .ThenInclude(item => item.Product)
             .Include(o => o.ListOrderItems)
                 .ThenInclude(item => item.Seller)
+            .Include(o=> o.PickupLocation)
             .ToListAsync();
     }
     

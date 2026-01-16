@@ -44,7 +44,7 @@ public class PickupLocationRespository : IPickupLocationRespository
     {
 
         return await _context.PickupLocation
-            .Where(p => EF.Property<Guid>(p, "SellerId") == sellerId)
+            .Where(p => EF.Property<Guid>(p, "SellerEntityId") == sellerId)
             .ToListAsync();
     }
     public async Task<PickupLocationEntity> GetByIdAsync(Guid sellerId)

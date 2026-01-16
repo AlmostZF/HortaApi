@@ -1,11 +1,9 @@
-using HortaGestao.Application.DTOs;
+
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Domain.IRepositories;
-using HortaGestao.Domain.ValueObjects;
 
 namespace HortaGestao.Application.Services;
 
@@ -20,15 +18,15 @@ public class StockService : IStockService
         _productRepository = productRepository;
     }
  
-    public async Task<List<StockResponseDto>> GetAllAsync()
+    public async Task<List<StockResponseDto>> GetAllAsync(Guid sellerId)
     {
-        var stockList = await _stockRepository.GetAllAsync();
+        var stockList = await _stockRepository.GetAllAsync(sellerId);
         return StockMapper.ToDtoList(stockList);
     }
 
-    public async Task<StockResponseDto> GetByIdAsync(Guid stockId)
+    public async Task<StockResponseDto> GetByIdAsync(Guid stockId, Guid sellerId)
     {
-        var stock = await _stockRepository.GetByIdAsync(stockId);
+        var stock = await _stockRepository.GetByIdAsync(stockId, sellerId);
 
         if (stock == null)
             throw new Exception("Erro ao buscar stock por Id");
@@ -39,9 +37,9 @@ public class StockService : IStockService
         return stockDto;
     }
 
-    public async Task UpdateQuantityAsync(StockUpdateDto stockUpdateDto)
+    public async Task UpdateQuantityAsync(StockUpdateDto stockUpdateDto, Guid sellerId)
     {
-        var stock = await _stockRepository.GetByIdAsync(stockUpdateDto.Id);
+        var stock = await _stockRepository.GetByIdAsync(stockUpdateDto.Id, sellerId);
         if (stock == null)
             throw new Exception("Stock not found.");
     
@@ -49,9 +47,9 @@ public class StockService : IStockService
         await _stockRepository.UpdateQuantityAsync(stock);
     }
 
-    public async Task<StockAvailableResponseDto> GetByProductIdAsync(Guid productId)
+    public async Task<StockAvailableResponseDto> GetByProductIdAsync(Guid productId, Guid sellerId)
     {
-        var stock = await _stockRepository.GetByProductIdAsync(productId);
+        var stock = await _stockRepository.GetByProductIdAsync(productId, sellerId);
         
         if (stock == null)
             throw new Exception("Erro ao buscar stock por Id do produto ");
@@ -61,9 +59,9 @@ public class StockService : IStockService
         return stockAvailableDto;
     }
 
-    public async Task AddAsync(StockCreateDto stockCreateDto)
+    public async Task AddAsync(StockCreateDto stockCreateDto, Guid sellerId)
     {
-        var stockEntityWithProduct = await _stockRepository.GetByProductIdAsync(stockCreateDto.ProductId);
+        var stockEntityWithProduct = await _stockRepository.GetByProductIdAsync(stockCreateDto.ProductId, sellerId);
         if (stockEntityWithProduct != null )
             throw new Exception("Stock already had product.");
     

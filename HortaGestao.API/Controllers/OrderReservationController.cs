@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.UseCases.OrderReservation;
@@ -42,20 +43,23 @@ public class OrderReservationController: ControllerBase
         _calculateOrderUseCase = calculateOrderUseCase;
     }
     
-    [Authorize(Roles = "Seller,Customer")]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get([FromRoute] Guid id)
+    [Authorize(Policy = "ActiveUser")]
+    [HttpGet]
+    public async Task<IActionResult> Get()
     {
-
-            var result = await _getOrderUseCase.ExecuteAsync(id);
-            return result.Value != null
-                ? Ok(result.Value)
-                : StatusCode(result.StatusCode, result.Error);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+    
+        var result = await _getOrderUseCase.ExecuteAsync(currentUserId);
+        return result.Value != null
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Admin")]
-    [AllowAnonymous]
-    [HttpGet]
+    [Authorize(Policy = "SellerRights")]
+    [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
 
@@ -65,7 +69,7 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
+    [Authorize(Policy = "SellerRights")]
     [HttpGet("status/{status}")]
     public async Task<IActionResult> GetByStatus([FromRoute] StatusOrder status)
     {
@@ -75,7 +79,7 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller,Customer")]
+    [Authorize(Policy = "ActiveUser")]
     [HttpGet("securitycode/{securityCode}")]
     public async Task<IActionResult> GetBySecutityCode([FromRoute] string securityCode)
     {
@@ -87,7 +91,6 @@ public class OrderReservationController: ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [AllowAnonymous]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
@@ -97,20 +100,11 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Seller")]
-    [AllowAnonymous]
+    [Authorize(Policy = "SellerRights")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] OrderReservationCreateDto orderReservationCreateDto)
     {
-        // if (User.Identity?.IsAuthenticated == true)
-        // {
-        //     var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //
-        //     if (!string.IsNullOrEmpty(userClaim) && Guid.TryParse(userClaim, out Guid currentUserId))
-        //     {
-        //         orderReservationCreateDto.UserId = currentUserId;
-        //     }
-        // }
+
         var result = await _createOrderUseCase.ExecuteAsync(orderReservationCreateDto);
         
         return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result.Error);
@@ -126,7 +120,7 @@ public class OrderReservationController: ControllerBase
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Roles = "Admin,Customer")]
+    [Authorize(Roles = "Admin")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody]OrderReservationUpdateDto orderReservationUpdateDto)
     {

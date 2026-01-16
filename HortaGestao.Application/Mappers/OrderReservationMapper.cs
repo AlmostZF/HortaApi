@@ -2,6 +2,7 @@ using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Domain.Entities;
+using HortaGestao.Domain.ValueObjects;
 
 namespace HortaGestao.Application.Mappers;
 
@@ -15,14 +16,6 @@ public class OrderReservationMapper
                 "A entidade orderReservationEntity não pode ser nula para mapeamento."
             );
         
-
-        var customerResponse = new CustomerResponseDto()
-        {
-            Id = null,
-            Name = orderReservationEntity.GuessCustomer.FullName,
-            PhoneNumber = orderReservationEntity.GuessCustomer.PhoneNumber,
-            SecurityCode = orderReservationEntity.Customer.SecurityCode.GenerateSecurityCode(),
-        };
         return new OrderReservationResponseDto
         {
             Id = orderReservationEntity.Id,
@@ -35,10 +28,21 @@ public class OrderReservationMapper
             ValueTotal = orderReservationEntity.TotalValue,
             UserResponse = orderReservationEntity.Customer != null 
                 ? CustomerMapper.ToDto(orderReservationEntity.Customer)
-                : customerResponse,
+                : GuessCustomerMapper(orderReservationEntity),
             listOrderItens = OrderReservationItemMapper.ToDtoList(orderReservationEntity.ListOrderItems)
         };
 
+    }
+
+    private static CustomerResponseDto GuessCustomerMapper(OrderReservationEntity orderReservationEntity)
+    {
+        return new CustomerResponseDto()
+        {
+            Id = null,
+            Name = orderReservationEntity.GuessCustomer.FullName,
+            PhoneNumber = orderReservationEntity.GuessCustomer.PhoneNumber,
+            SecurityCode = orderReservationEntity.Customer.SecurityCode.GenerateSecurityCode(),
+        };
     }
 
     public static List<OrderReservationResponseDto> ToDtoList(IEnumerable<OrderReservationEntity> orderReservationEntity)

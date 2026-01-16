@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using HortaGestao.API.Middleware;
 using HortaGestao.Application.Interfaces;
@@ -56,6 +58,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
 var jwtSection = builder.Configuration.GetSection("jwt");
 var key = Encoding.UTF8.GetBytes(jwtSection["key"] ?? string.Empty);
 
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,12 +78,23 @@ builder.Services.AddAuthentication(options =>
             ValidateLifetime = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SellerRights",
+        policy => policy.RequireRole("Seller", "Admin"));
+    
+    options.AddPolicy("CustomerRights",
+        policy => policy.RequireRole("Customer", "Admin"));
+    
+    options.AddPolicy("ActiveUser", policy => 
+        policy.RequireRole("Seller", "Customer", "Admin"));
+});
 
 
 var app = builder.Build();

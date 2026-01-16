@@ -14,30 +14,31 @@ public class StockRepository : IStockRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<StockEntity>> GetAllAsync()
+    public async Task<IEnumerable<StockEntity>> GetAllAsync(Guid sellerId)
     {
         return await _context.Stock
             .Include(s=>s.Product)
             .ThenInclude(p=> p.Seller)
+            .Where(s=> s.Product.SellerId == sellerId)
             .ToListAsync();
     }
 
-    public async Task<StockEntity?> GetByProductIdAsync(Guid productId)
+    public async Task<StockEntity?> GetByProductIdAsync(Guid productId, Guid sellerId)
     {
         var stock = await _context.Stock
             .Include(s => s.Product)
             .ThenInclude(p=> p.Seller)
-            .FirstOrDefaultAsync(s => s.ProductId == productId);
+            .FirstOrDefaultAsync(s => s.ProductId == productId && s.Product.SellerId == sellerId);
 
         return stock;
     }
 
-    public async Task<StockEntity> GetByIdAsync(Guid stockId)
+    public async Task<StockEntity> GetByIdAsync(Guid stockId,  Guid sellerId)
     {
         var stock = await _context.Stock
             .Include(s => s.Product)
-            .ThenInclude(p=> p.Seller)
-            .FirstOrDefaultAsync(s => s.Id == stockId);
+                .ThenInclude(p=> p.Seller)
+            .FirstOrDefaultAsync(s => s.Id == stockId && s.Product.SellerId == sellerId);
         
         if (stock == null)
             throw new Exception("Stock not found.");

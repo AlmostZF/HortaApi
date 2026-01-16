@@ -1,4 +1,5 @@
 using HortaGestao.Application.DTOs.Response;
+using HortaGestao.Application.Interfaces.Repositories;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
 
@@ -7,17 +8,24 @@ namespace HortaGestao.Application.UseCases.OrderReservation;
 public class GetOrderUseCase
 {
     private readonly IOrderReservationService _orderReservationService;
+    private readonly IAuthRepository _authRepository;
 
-    public GetOrderUseCase(IOrderReservationService orderReservationService)
+    public GetOrderUseCase(IOrderReservationService orderReservationService, IAuthRepository authRepository)
     {
         _orderReservationService = orderReservationService;
+        _authRepository = authRepository;
     }
 
     public async Task<Result<OrderReservationResponseDto>> ExecuteAsync(Guid id)
     {
         try
         {
-           var orderReservationDto = await _orderReservationService.GetByIdAsync(id);
+            var customerId = await _authRepository.GetBusinessIdByIdentityIdAsync(id);
+            if (customerId == null)
+                return Result<OrderReservationResponseDto>.Failure("Identificação do usuário inválida.", 401);
+            
+            var orderReservationDto = await _orderReservationService.GetByIdAsync(customerId.Value);
+            
             return Result<OrderReservationResponseDto>.Success(orderReservationDto,200);
         }
         catch (Exception e)
