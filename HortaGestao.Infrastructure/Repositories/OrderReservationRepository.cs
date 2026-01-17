@@ -117,5 +117,4 @@ public class OrderReservationRepository : IOrderReservationRepository
             .Include(o=> o.PickupLocation)
             .ToListAsync();
     }
-    
 }

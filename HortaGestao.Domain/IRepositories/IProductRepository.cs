@@ -12,5 +12,6 @@ public interface IProductRepository
     Task<IEnumerable<ProductEntity>> GetAllAsync();
     Task<IEnumerable<ProductEntity>> FilterAsync(ProductFilter productFilter);
     Task<int> CountAsync(ProductFilter productFilter);
+    Task<IEnumerable<ProductEntity>> GetManyProducts(IEnumerable<Guid> ids);
 
 }

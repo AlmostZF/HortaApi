@@ -32,14 +32,23 @@ public class StorageService:IStorageService
         return GetUrl(containerName, fileName);
     }
 
-    public async Task DeleteFileAsync(string fileName, string containerName)
+    public Task DeleteFileAsync(string fileName, string containerName)
     {
-        var fileSplit = fileName.Split("/");
-        var filePath = Path.Combine(_rootPath, containerName, fileSplit[4]);
-        if (File.Exists(filePath))
+        try
         {
-            await Task.Run(() => File.Delete(filePath));
+            var fileSplit = fileName.Split("/");
+            var filePath = Path.Combine(_rootPath, containerName, fileSplit[4]);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
         }
+        catch (Exception e)
+        {
+            return Task.CompletedTask;
+        }
+
+        return Task.CompletedTask;
     }
 
     public async Task<string> UploadFileAsync(IFormFile file, string containerName)

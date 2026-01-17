@@ -2,7 +2,6 @@ using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Domain.Entities;
-using HortaGestao.Domain.ValueObjects;
 
 namespace HortaGestao.Application.Mappers;
 
@@ -50,29 +49,33 @@ public class OrderReservationMapper
         return orderReservationEntity.Select(ToDto).ToList();
     }
 
-    public static OrderCalculateResponseDto ToCalculatedOrderDTO(ICollection<OrderReservationItemEntity> itensCollection, decimal fee, decimal totalValue)
+    public static OrderCalculateResponseDto ToCalculatedOrderDTO(ICollection<OrderReservationItemEntity> itensCollection,
+        IEnumerable<ProductEntity> products)
     {
         
         var orderCalculateResponse = new OrderCalculateResponseDto();
-        orderCalculateResponse.Fee = fee;
-        orderCalculateResponse.Total = totalValue;
     
-        var listItens = itensCollection.Select(itemDto => new OrderReservationItemResponseDto()
+        var listItens = itensCollection.Select(itemDto => 
+        {
+            var productData = products.FirstOrDefault(p => p.Id == itemDto.ProductId);
+            return new OrderReservationItemResponseDto()
             {
                 ProductId = itemDto.ProductId,
-                Id = null,
-                Name = itemDto.Product.Name,
+                Name = productData?.Name ?? "Produto sem nome",
                 Quantity = itemDto.Quantity,
-                ReservationId = itemDto.ReservationId,
                 SellerId = itemDto.SellerId,
-                SellerName = itemDto.Seller.Name,
-                TotalPrice = itemDto.TotalPrice,
+                SellerName = productData?.Seller?.Name ?? "Vendedor não informado",
                 UnitPrice = itemDto.UnitPrice,
-                Image = itemDto.Product.Image
-            })
-            .ToList();
-    
+                TotalPrice = itemDto.Quantity * itemDto.UnitPrice,
+                Image = productData?.Image
+            };
+
+        }).ToList();
+
         orderCalculateResponse.ListOrderItens = listItens;
+        orderCalculateResponse.Total = listItens.Sum(item => item.TotalPrice);
+        orderCalculateResponse.Fee = 0;
+        
         return orderCalculateResponse;
     
     }
@@ -81,11 +84,6 @@ public class OrderReservationMapper
         ICollection<OrderReservationItemEntity> listOrderItem,  decimal reservationFee)
     {
         orderEntity.UpdateOrderStatus(MapStatus(orderReservationUpdateDto.OrderStatus));
-        // orderEntity.SetItems(listOrderItem);
-        // orderEntity.SchedulePickup(orderReservationUpdateDto.PickupDate, orderReservationUpdateDto.PickupDeadline);
-        // orderEntity.SetReservationDate(orderReservationUpdateDto.ReservationDate);
-        // orderEntity.ApplyFee(reservationFee);
-        
     }
     public static OrderReservationEntity ToCreateEntity(OrderReservationCreateDto orderReservationCreateDto, decimal reservationFee, decimal total, Guid sellerId)
     {

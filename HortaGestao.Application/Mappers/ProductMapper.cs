@@ -11,9 +11,7 @@ public class ProductMapper
     
     public static ProductResponseDto ToDto(ProductEntity productEntity)
     {
-        var baseUrl = "http://localhost:5000/";
-        //TODO remover base URL mocada
-        
+
         return new ProductResponseDto()
         {
             Id = productEntity.Id,
@@ -22,7 +20,7 @@ public class ProductMapper
             UnitPrice = productEntity.UnitPrice,
             Seller = SellerMapper.ToDto(productEntity.Seller),
             ConservationDays = productEntity.ConservationDays,
-            Image = baseUrl + productEntity.Image,
+            Image = productEntity.Image,
             LargeDescription = productEntity.LargeDescription,
             ShortDescription = productEntity.ShortDescription,
             Weight = productEntity.Weight

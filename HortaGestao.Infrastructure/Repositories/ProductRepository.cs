@@ -20,6 +20,8 @@ public class ProductRepository : IProductRepository
     {
         var product = await _context.Product
             .Include(p => p.Seller)
+                .ThenInclude(s=> s.PickupLocations)
+            .Where(p => p.IsActive == true)
             .FirstOrDefaultAsync(p => p.Id == id);
         
         if (product == null)
@@ -72,6 +74,7 @@ public class ProductRepository : IProductRepository
             .Include(p=>p.Seller)
             .Skip((productFilter.PageNumber - 1) * productFilter.MaxItensPerPage)
             .Take(productFilter.MaxItensPerPage)
+            .Where(p => p.IsActive == true)
             .ToListAsync();
     }
 
@@ -79,6 +82,11 @@ public class ProductRepository : IProductRepository
     {
         var query = ApplyFilters(productFilter);
         return await query.CountAsync();
+    }
+
+    public async Task<IEnumerable<ProductEntity>> GetManyProducts(IEnumerable<Guid> ids)
+    {
+        return await _context.Product.Where(p => ids.Contains(p.Id)).ToListAsync();
     }
 
     private IQueryable<ProductEntity> ApplyFilters(ProductFilter productFilter)

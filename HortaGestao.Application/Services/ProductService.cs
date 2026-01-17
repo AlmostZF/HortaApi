@@ -39,6 +39,7 @@ public class ProductService: IProductService
         
         var fileName = await _storageService.UploadFileAsync(productUpdateDTO.Image, "products");
         
+        
         await _storageService.DeleteFileAsync(existingProduct.Image, "products");
         
         ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO, fileName);    

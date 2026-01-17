@@ -19,7 +19,7 @@ public class OrderReservationCreateDto
     public string OrderStatus { get; set; }
     
     [JsonPropertyName("listOrderItens")] 
-    public List<OrderReservationItemCreateDto> listOrderItens { get; set; }
+    public List<OrderReservationItemDto> listOrderItens { get; set; }
     
 
 }
