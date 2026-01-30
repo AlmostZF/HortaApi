@@ -1,6 +1,7 @@
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Services;
+using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Domain.IRepositories;
 
@@ -10,12 +11,15 @@ public class PickupLocationService : IPickupLocationService
 {   
     private readonly IPickupLocationRespository _pickupLocationRespository;
     private readonly ISellerRepository _sellerRepository;
+    private readonly IUnitOfWork _unitOfWork;
     
     public PickupLocationService(IPickupLocationRespository pickupLocationRespository,
-        ISellerRepository sellerRepository)
+        ISellerRepository sellerRepository,
+        IUnitOfWork unitOfWork)
     {
         _pickupLocationRespository = pickupLocationRespository;
         _sellerRepository = sellerRepository;
+        _unitOfWork = unitOfWork;
     }
     
     public async Task<Guid> CreateAsync(PickupLocationCreateDto pickupLocationCreateDto)
@@ -41,13 +45,55 @@ public class PickupLocationService : IPickupLocationService
     }
     
 
-    public async Task UpdateAsync(PickupLocationUpdateDto pickupLocationUpdateDto)
+    public async Task UpdateAsync(List<PickupLocationUpdateDto> pickupLocationUpdateDto, Guid sellerId)
     {
-        var existingPickupLocation = await _pickupLocationRespository.GetByIdAsync(pickupLocationUpdateDto.Id);
         
-        PickupLocationMapper.ToUpdateEntity(existingPickupLocation, pickupLocationUpdateDto);
+        var currentLocations = await _pickupLocationRespository.GetBySellerIdAsync(sellerId);
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            var Ids = pickupLocationUpdateDto.Select(x => x.Id).ToList();
+            var toDelete = currentLocations.Where(x => !Ids.Contains(x.Id)).ToList();
+            foreach (var item in toDelete) await _pickupLocationRespository.DeleteAsync(item.Id);
+            
+            foreach (var pickupLocantion in pickupLocationUpdateDto)
+            {
+                var existingPickupLocation = currentLocations.FirstOrDefault(x => x.Id == pickupLocantion.Id);
+                if (existingPickupLocation != null)
+                {
+                    PickupLocationMapper.ToUpdateEntity(existingPickupLocation, pickupLocantion);
+                    await _pickupLocationRespository.UpdateAsync(existingPickupLocation);
+                }
+                else
+                {       
+                    var createPickupLocation = new PickupLocationCreateDto
+                    {
+                        City = pickupLocantion.City,
+                        Neighborhood = pickupLocantion.Neighborhood,
+                        Number = pickupLocantion.Number,
+                        Street = pickupLocantion.Street,
+                        ZipCode = pickupLocantion.ZipCode,
+                        State = pickupLocantion.State,
+                        PickupDays = pickupLocantion.PickupDays,
+                        SellerId = sellerId
+                    };
+                    
+                     var newPickupLocation = PickupLocationMapper.ToCreateEntity(createPickupLocation);
+                     await _pickupLocationRespository.CreateAsync(newPickupLocation);
+                }
+                
+                
+
+            }
+                
+            await _unitOfWork.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
         
-        await _pickupLocationRespository.UpdateAsync(existingPickupLocation);
     }
 
     public async Task<List<PickupLocationResponseDto>> GetBySellerIdAsync(Guid id)

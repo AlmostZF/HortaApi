@@ -40,16 +40,18 @@ public class PickupLocationRespository : IPickupLocationRespository
         await _context.SaveChangesAsync();
     }
     
-    public async Task<IEnumerable<PickupLocationEntity>> GetBySellerIdAsync(Guid sellerId)
+    public async Task<IEnumerable<PickupLocationEntity>> GetBySellerIdAsync(Guid id)
     {
-
         return await _context.PickupLocation
-            .Where(p => EF.Property<Guid>(p, "SellerEntityId") == sellerId)
+            .Where(p => p.SellerEntityId == id)
             .ToListAsync();
     }
-    public async Task<PickupLocationEntity> GetByIdAsync(Guid sellerId)
+    public async Task<PickupLocationEntity> GetByIdAsync(Guid id, Guid sellerId)
     {
-        var pickupLocation = await _context.PickupLocation.FindAsync(sellerId);
+        var pickupLocation = await _context.PickupLocation
+            .Where(p => EF.Property<Guid>(p, "SellerEntityId") == sellerId && p.Id == id)
+            .FirstOrDefaultAsync();
+        
         if(pickupLocation == null)
             throw new Exception("PickupLocation not found.");
         

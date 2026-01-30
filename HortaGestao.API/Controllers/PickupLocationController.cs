@@ -39,7 +39,7 @@ public class PickupLocationController:ControllerBase
         
         var result = await _getByIdPickupLocationUseCase.ExecuteAsync(currentUserId);
         
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -57,12 +57,15 @@ public class PickupLocationController:ControllerBase
     
     [Authorize(Policy = "SellerRights")]
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody]PickupLocationUpdateDto pickupLocationUpdateDto)
+    public async Task<IActionResult> Update([FromBody]List<PickupLocationUpdateDto> pickupLocationUpdateDto)
     {
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _updatePickupLocationUseCase.ExecuteAsync(pickupLocationUpdateDto, currentUserId);
 
-        var result = await _updatePickupLocationUseCase.ExecuteAsync(pickupLocationUpdateDto);
-
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -73,7 +76,7 @@ public class PickupLocationController:ControllerBase
     {
         var result = await _deletePickupLocationUseCase.ExecuteAsync(id);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }

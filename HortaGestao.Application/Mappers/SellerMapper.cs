@@ -13,7 +13,7 @@ public class SellerMapper
             Id = sellerEntity.Id,
             Name = sellerEntity.Name ,
             PhoneNumber = sellerEntity.PhoneNumber,
-            PickupLocation = PickupLocationMapper.ToDtoList(sellerEntity.PickupLocations)
+            ListPickupLocations = PickupLocationMapper.ToDtoList(sellerEntity.PickupLocations)
         };
 
     }

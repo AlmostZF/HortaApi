@@ -8,5 +8,5 @@ public interface IPickupLocationRespository
     public Task DeleteAsync(Guid id);
     public Task UpdateAsync(PickupLocationEntity entity);
     public Task<IEnumerable<PickupLocationEntity>> GetBySellerIdAsync(Guid sellerId);
-    public Task<PickupLocationEntity> GetByIdAsync(Guid Id);
+    public Task<PickupLocationEntity> GetByIdAsync(Guid Id, Guid sellerId);
 }

@@ -43,7 +43,7 @@ public class PickupLocationMapper
         
         var availableDays = pickupLocationCreateDto.PickupDays.Select(day => new PickupDay(day));
         
-        return new PickupLocationEntity(address, availableDays);
+        return new PickupLocationEntity(address, availableDays, pickupLocationCreateDto.SellerId);
     }
     
     public static void ToUpdateEntity(PickupLocationEntity pickupLocationEntity, PickupLocationUpdateDto pickupLocationUpdateDto)
@@ -83,7 +83,8 @@ public class PickupLocationMapper
 
         var pickupPoint = new PickupLocationEntity(
             address,
-            pickupLocationCreateDto.PickupDays.Select(d => new PickupDay(d))
+            pickupLocationCreateDto.PickupDays.Select(d => new PickupDay(d)),
+            pickupLocationCreateDto.SellerId
         );
         
         return pickupPoint;

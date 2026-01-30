@@ -37,14 +37,14 @@ public class SellerController: ControllerBase
     [HttpGet]
     public async Task<IActionResult> getById()
     {
-        
         var stringcurrentUserId = User.FindFirst("sub")?.Value 
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
         Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
         var result = await _getSellerUseCase.ExecuteAsync(currentUserId);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -56,7 +56,7 @@ public class SellerController: ControllerBase
 
         var result = await _getAllSellerUseCase.ExecuteAsync();
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
         
@@ -68,7 +68,7 @@ public class SellerController: ControllerBase
     {
         var result = await _deleteSellerUseCase.ExecuteAsync(id);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -79,7 +79,7 @@ public class SellerController: ControllerBase
     {
         var result = await _createSellerUseCase.ExecuteAsync(sellerCreateDto);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -88,10 +88,15 @@ public class SellerController: ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] SellerUpdateDto sellerUpdateDto)
     {
-        var result = await _updateSellerUseCase.ExecuteAsync(sellerUpdateDto);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _updateSellerUseCase.ExecuteAsync(sellerUpdateDto,  currentUserId);
 
-        return result.Message != null
-            ? Ok(result.Message)
+        return result.IsSuccess
+            ? Ok(result)
             : StatusCode(result.StatusCode, result.Error);
     }
 }

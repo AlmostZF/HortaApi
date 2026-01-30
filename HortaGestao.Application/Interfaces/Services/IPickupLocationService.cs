@@ -7,6 +7,6 @@ public interface IPickupLocationService
 {
     public Task<Guid> CreateAsync(PickupLocationCreateDto pickupLocationCreateDto);
     public Task DeleteAsync(Guid id);
-    public Task UpdateAsync(PickupLocationUpdateDto pickupLocationUpdateDto);
+    public Task UpdateAsync(List<PickupLocationUpdateDto> pickupLocationUpdateDto, Guid sellerId);
     public Task<List<PickupLocationResponseDto>> GetBySellerIdAsync(Guid id);
 }

@@ -6,16 +6,18 @@ public class PickupLocationEntity
 {
     public Guid Id { get; private set; }
     public Address Address { get; private set; }
+    public Guid SellerEntityId { get; private set; }
     
     private readonly List<PickupDay> _availablePickupDays = new();
     public IReadOnlyCollection<PickupDay> AvailablePickupDays => _availablePickupDays.AsReadOnly();
     
     public PickupLocationEntity(){}
     
-    public PickupLocationEntity(Address address, IEnumerable<PickupDay> availableDays)
+    public PickupLocationEntity(Address address, IEnumerable<PickupDay> availableDays, Guid sellerEntityId)
     {
         Id = Guid.NewGuid();
         Address = address ?? throw new ArgumentNullException(nameof(address));
+        SellerEntityId = sellerEntityId;
 
         if (!availableDays.Any())
             throw new ArgumentException("Pickup point must have at least one available day.");
