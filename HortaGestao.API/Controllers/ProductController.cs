@@ -48,7 +48,7 @@ public class ProductController: ControllerBase
     {
         var result = await _getProductUseCase.ExecuteAsync(id);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -59,7 +59,7 @@ public class ProductController: ControllerBase
     {
         var result = await _getImageUseCase.ExecuteAsync(imageString,containerName);
 
-        return result.Value != null
+        return result.IsSuccess
             ? File(result.Value, "image/png")
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -70,7 +70,7 @@ public class ProductController: ControllerBase
     {
         var result = await _getAllProductUseCase.ExecuteAsync();
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -81,7 +81,7 @@ public class ProductController: ControllerBase
     {
         var result = await _deleteProductUseCase.ExecuteAsync(id);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -91,7 +91,11 @@ public class ProductController: ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm]ProductCreateDto productCreateDTO)
     {
-        var result = await _createProductUseCase.ExecuteAsync(productCreateDTO);
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _createProductUseCase.ExecuteAsync(productCreateDTO, currentUserId);
 
         return result.Value != Guid.Empty
             ? Created($"/api/products/{result.Value}",result.Value)
@@ -103,10 +107,13 @@ public class ProductController: ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Update([FromForm]ProductUpdateDto productUpdateDto)
     {
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
-        var result = await _updateProductUseCase.ExecuteAsync(productUpdateDto);
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _updateProductUseCase.ExecuteAsync(productUpdateDto, currentUserId);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -117,7 +124,7 @@ public class ProductController: ControllerBase
     {
         var result = await _updateProductStatusUseCase.ExecuteAsync(publiProductUpdateStatusDto);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -128,7 +135,7 @@ public class ProductController: ControllerBase
     {
         var result = await _filterProductsUseCase.ExecuteAsync(productFilterDto);
         
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }

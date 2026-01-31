@@ -7,6 +7,7 @@ public class OrderReservationItemResponseDto
     public Guid ProductId { get; set; }
     public Guid SellerId { get; set; }
     public int Quantity { get; set; }
+    public int MaxQuantity { get; set; }
     
     public string? Name { get; set; }
 

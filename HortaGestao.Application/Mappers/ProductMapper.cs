@@ -34,27 +34,28 @@ public class ProductMapper
     }
 
     
-    public static ProductEntity ToCreateEntity(ProductCreateDto productCreateDto, string imagePath)
+    public static ProductEntity ToCreateEntity(ProductCreateDto productCreateDto, string imagePath, Guid sellerId)
     {
         var productType = ProductEntity.StringToProductType(productCreateDto.ProductType); 
         return new ProductEntity( productCreateDto.Name, productType, productCreateDto.UnitPrice,
-            productCreateDto.SellerId, productCreateDto.ConservationDays, imagePath,
+            sellerId, productCreateDto.ConservationDays, imagePath,
             productCreateDto.ShortDescription,
             productCreateDto.LargeDescription, productCreateDto.Weight);
     }
     
-    public static void ToUpdateEntity(ProductEntity productEntity, ProductUpdateDto productUpdateDto, string  imagePath)
+    public static void ToUpdateEntity(ProductEntity productEntity, ProductUpdateDto productUpdateDto, string imagePath ,Guid sellerId)
     {
         productEntity.UpdateProductEntity(
             productUpdateDto.Name,
             productUpdateDto.ProductType,
             productUpdateDto.UnitPrice,
-            productUpdateDto.SellerId,
+            sellerId,
             productUpdateDto.ConservationDays,
             imagePath,
             productUpdateDto.LargeDescription,
             productUpdateDto.ShortDescription,
-            productUpdateDto.Weight);
+            productUpdateDto.Weight,
+            productUpdateDto.IsActive);
 
     }
 

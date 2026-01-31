@@ -21,7 +21,7 @@ public class ProductRepository : IProductRepository
         var product = await _context.Product
             .Include(p => p.Seller)
                 .ThenInclude(s=> s.PickupLocations)
-            .Where(p => p.IsActive == true)
+                    .ThenInclude(pl => pl.AvailablePickupDays)
             .FirstOrDefaultAsync(p => p.Id == id);
         
         if (product == null)
@@ -86,7 +86,12 @@ public class ProductRepository : IProductRepository
 
     public async Task<IEnumerable<ProductEntity>> GetManyProducts(IEnumerable<Guid> ids)
     {
-        return await _context.Product.Where(p => ids.Contains(p.Id)).ToListAsync();
+        return await _context.Product
+            .Where(p => ids.Contains(p.Id))
+            .Include(p=>p.Seller)
+                .ThenInclude(s=> s.PickupLocations)
+                    .ThenInclude(pl => pl.AvailablePickupDays)
+            .ToListAsync();
     }
 
     private IQueryable<ProductEntity> ApplyFilters(ProductFilter productFilter)

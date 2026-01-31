@@ -20,9 +20,9 @@ public static class OrderReservationItemMapper
             SellerId = orderReservationItemEntity.SellerId,
             TotalPrice = orderReservationItemEntity.TotalPrice,
             UnitPrice = orderReservationItemEntity.UnitPrice,
-            // Name = orderReservationItemEntity.Product.Name,
-            // SellerName = orderReservationItemEntity.Seller.Name,
-            // Image = orderReservationItemEntity.Product.Image
+            Name = orderReservationItemEntity.Product.Name,
+            SellerName = orderReservationItemEntity.Seller.Name,
+            Image = orderReservationItemEntity.Product.Image
             // Product = ProductMapper.ToDto(orderReservationItemEntity.Product),
             // Seller = SellerMapper.ToDto(orderReservationItemEntity.Seller)
         };

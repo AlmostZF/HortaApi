@@ -21,6 +21,7 @@ public class OrderReservationController: ControllerBase
     private readonly GetOrderByStatusUseCase _getOrderByStatusUseCase;
     private readonly GetOrderUseCase _getOrderUseCase;
     private readonly UpdateOrderUseCase _updateOrderUseCase;
+    private readonly FinishOrderUserCase _finishOrderUserCase;
 
     public OrderReservationController(
         CreateOrderUseCase createOrderUseCase,
@@ -30,7 +31,8 @@ public class OrderReservationController: ControllerBase
         GetOrderByStatusUseCase getOrderByStatusUseCase,
         GetOrderUseCase getOrderUseCase,
         UpdateOrderUseCase updateOrderUseCase,
-        CalculateOrderUseCase calculateOrderUseCase
+        CalculateOrderUseCase calculateOrderUseCase,
+        FinishOrderUserCase finishOrderUserCase
         )
     {
         _createOrderUseCase = createOrderUseCase;
@@ -41,6 +43,7 @@ public class OrderReservationController: ControllerBase
         _getOrderUseCase = getOrderUseCase;
         _updateOrderUseCase = updateOrderUseCase;
         _calculateOrderUseCase = calculateOrderUseCase;
+        _finishOrderUserCase = finishOrderUserCase;
     }
     
     [Authorize(Policy = "ActiveUser")]
@@ -83,9 +86,13 @@ public class OrderReservationController: ControllerBase
     [HttpGet("securitycode/{securityCode}")]
     public async Task<IActionResult> GetBySecutityCode([FromRoute] string securityCode)
     {
-
-        var result = await _getOrderBySecurityUseCase.ExecuteAsync(securityCode);
-        return result.Value != null
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        
+        var result = await _getOrderBySecurityUseCase.ExecuteAsync(securityCode, currentUserId);
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -95,19 +102,20 @@ public class OrderReservationController: ControllerBase
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _deleteOrderUseCase.ExecuteAsync(id);
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
     
-    [Authorize(Policy = "SellerRights")]
+    [AllowAnonymous]
+    [Authorize(Policy = "ActiveUser")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] OrderReservationCreateDto orderReservationCreateDto)
     {
 
         var result = await _createOrderUseCase.ExecuteAsync(orderReservationCreateDto);
         
-        return result.IsSuccess ? Ok(result) : StatusCode(result.StatusCode, result.Error);
+        return result.IsSuccess ? Ok(result.Value) : StatusCode(result.StatusCode, result.Error);
     }
     
     [AllowAnonymous]
@@ -115,7 +123,7 @@ public class OrderReservationController: ControllerBase
     public async Task<IActionResult> Calculate([FromBody]OrderCalculateDto orderCalculateDto)
     {
         var result = await _calculateOrderUseCase.ExecuteAsync(orderCalculateDto);
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -125,8 +133,23 @@ public class OrderReservationController: ControllerBase
     public async Task<IActionResult> Update([FromBody]OrderReservationUpdateDto orderReservationUpdateDto)
     {
         var result = await _updateOrderUseCase.ExecuteAsync(orderReservationUpdateDto);
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
+            : StatusCode(result.StatusCode, result.Error);
+    }
+    
+        
+    [Authorize(Policy = "ActiveUser")]
+    [HttpPut("finish")]
+    public async Task<IActionResult> Finish([FromBody]UpdateStatusOrderDto updateStatusOrderDto)
+    {
+        var stringcurrentUserId = User.FindFirst("sub")?.Value 
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
+        var result = await _finishOrderUserCase.ExecuteAsync(updateStatusOrderDto.Id, currentUserId);
+        return result.IsSuccess
+            ? Ok(result)
             : StatusCode(result.StatusCode, result.Error);
     }
 }

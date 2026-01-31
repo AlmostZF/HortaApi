@@ -16,22 +16,31 @@ public class OrderReservationRepository : IOrderReservationRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<OrderReservationEntity>> GetBySecurityCodeAsync(string securityCode)
+    public async Task<OrderReservationEntity> GetBySecurityCodeAsync(string securityCode, Guid id)
     {
         var code = new SecurityCode(securityCode);
-        
-        return await _context.OrderReservation
-            .Include(o=> o.Customer)
+
+        var order = await _context.OrderReservation
+            .Include(o => o.Customer)
             .Include(o => o.ListOrderItems)
-                .ThenInclude(p=>p.Product)
-            .Include(o=> o.PickupLocation)
-            .Where(o => o.SecurityCode == code ||
-                        (o.Customer!= null && o.SecurityCode == code)
-                        )
-            .ToListAsync();
+                .ThenInclude(p => p.Product)
+            .Include(o => o.Seller)
+            .Include(o => o.PickupLocation)
+            
+            .FirstOrDefaultAsync(o => (
+                    o.OrderStatus == StatusOrder.Pendente
+                    && o.SellerId == id &&
+                    o.SecurityCode == code)
+            );
+        
+        if (order == null)
+           return null;
+        
+        return order;
+        
     }
 
-    public async Task<OrderReservationEntity> GetByIdAsync(Guid id)
+    public async Task<OrderReservationEntity> GetBySellerIdAsync(Guid id)
     {
         var order = await _context.OrderReservation
             .Include(o => o.Customer)
@@ -41,13 +50,30 @@ public class OrderReservationRepository : IOrderReservationRepository
                 .ThenInclude(i => i.Product)
             .Include(o=> o.PickupLocation)
             .FirstOrDefaultAsync(o => o.SellerId == id);
-        
+
         if (order == null)
-            throw new Exception("Order not found.");
+            return null;
         
         return order;
     }
-    
+
+    public async Task<OrderReservationEntity> GetByIdAsync(Guid id, Guid sellerId)
+    {
+        var order = await _context.OrderReservation
+            .Include(o => o.Customer)
+            .Include(o => o.ListOrderItems)
+            .ThenInclude(i => i.Seller)
+            .Include(o => o.ListOrderItems)
+            .ThenInclude(i => i.Product)
+            .Include(o=> o.PickupLocation)
+            .FirstOrDefaultAsync(o => o.Id == id && o.SellerId == sellerId);
+
+        if (order == null)
+            return null;
+        
+        return order;
+    }
+
 
     public async Task UpdateStatusAsync(string status, Guid id)
     {

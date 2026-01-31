@@ -8,7 +8,7 @@ public class ProductCreateDto
     public string Name { get; set; }
     public string ProductType { get; set; }
     public decimal UnitPrice { get; set; }
-    public Guid SellerId { get; set; }
+    //public Guid? SellerId { get; set; }
     
     public string ConservationDays { get; set; }
 

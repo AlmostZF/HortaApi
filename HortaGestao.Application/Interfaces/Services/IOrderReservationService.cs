@@ -6,13 +6,13 @@ namespace HortaGestao.Application.Interfaces.Services;
 
 public interface IOrderReservationService
 {
-    Task<List<OrderReservationResponseDto>> GetBySecurityCodeAsync(string securityCode);
-    Task<OrderReservationResponseDto> GetByIdAsync(Guid id);
-    Task UpdateStatusAsync(OrderReservationResponseDto orderReservationResponseDto);
+    Task<OrderReservationResponseDto?> GetBySecurityCodeAsync(string securityCode,Guid sellerId);
+    Task<OrderReservationResponseDto> GetBySellerIdAsync(Guid id);
+    Task FinishOrder(Guid guid, Guid sellerId);
     Task UpdateAsync(OrderReservationUpdateDto orderReservationUpdateDto);
     Task<OrderCalculateResponseDto> CalculateAsync(OrderCalculateDto orderCalculateDTO);
     Task DeleteAsync(Guid id);
-    Task AddAsync(OrderReservationCreateDto order);
+    Task<List<CreateOrderReservationResponseDto>> AddAsync(OrderReservationCreateDto order);
     Task<List<OrderReservationResponseDto>> GetByStatusAsync(StatusOrder status);
     Task<List<OrderReservationResponseDto>> GetAllAsync();
 }

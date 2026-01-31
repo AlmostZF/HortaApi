@@ -40,7 +40,9 @@ public class OrderReservationMapper
             Id = null,
             Name = orderReservationEntity.GuessCustomer.FullName,
             PhoneNumber = orderReservationEntity.GuessCustomer.PhoneNumber,
-            SecurityCode = orderReservationEntity.Customer.SecurityCode.GenerateSecurityCode(),
+            SecurityCode = orderReservationEntity.SecurityCode.Value == null
+                ? orderReservationEntity.Customer.SecurityCode.GenerateSecurityCode()
+                : orderReservationEntity.SecurityCode.Value,
         };
     }
 
@@ -50,33 +52,62 @@ public class OrderReservationMapper
     }
 
     public static OrderCalculateResponseDto ToCalculatedOrderDTO(ICollection<OrderReservationItemEntity> itensCollection,
-        IEnumerable<ProductEntity> products)
+        IEnumerable<ProductEntity> products, Dictionary<Guid, int> stock)
     {
-        
-        var orderCalculateResponse = new OrderCalculateResponseDto();
     
         var listItens = itensCollection.Select(itemDto => 
         {
-            var productData = products.FirstOrDefault(p => p.Id == itemDto.ProductId);
+            stock.TryGetValue(itemDto.ProductId, out var maxQuantity);
+            var productEntity = products.FirstOrDefault(p => p.Id == itemDto.ProductId);
             return new OrderReservationItemResponseDto()
             {
                 ProductId = itemDto.ProductId,
-                Name = productData?.Name ?? "Produto sem nome",
+                Name = productEntity?.Name ?? "Produto sem nome",
                 Quantity = itemDto.Quantity,
                 SellerId = itemDto.SellerId,
-                SellerName = productData?.Seller?.Name ?? "Vendedor não informado",
+                SellerName = productEntity?.Seller?.Name ?? "Vendedor não informado",
                 UnitPrice = itemDto.UnitPrice,
                 TotalPrice = itemDto.Quantity * itemDto.UnitPrice,
-                Image = productData?.Image
+                Image = productEntity?.Image,
+                MaxQuantity = maxQuantity
             };
 
         }).ToList();
-
-        orderCalculateResponse.ListOrderItens = listItens;
-        orderCalculateResponse.Total = listItens.Sum(item => item.TotalPrice);
-        orderCalculateResponse.Fee = 0;
         
-        return orderCalculateResponse;
+        var firstProductWithSeller = products.FirstOrDefault(p => p.Seller != null);
+        
+        SellerResponseDto? sellerDto = null;
+        
+        if(firstProductWithSeller != null)
+        {
+            var seller = firstProductWithSeller?.Seller;
+            sellerDto = new SellerResponseDto()
+            {
+                Id = seller.Id,
+                Name = seller.Name,
+                PhoneNumber = seller.PhoneNumber,
+                ListPickupLocations = seller.PickupLocations?.Select(loc => new PickupLocationResponseDto
+                {
+                    Id = loc.Id,
+                    Name = "Endereço ",
+                    Street = loc.Address.Street,
+                    Number = loc.Address.Number,
+                    City = loc.Address.City,
+                    State = loc.Address.State,
+                    ZipCode = loc.Address.ZipCode,
+                    Neighborhood = loc.Address.Neighborhood,
+                    PickupDays = loc.AvailablePickupDays.Select(day => day.Day).ToList()
+                }).ToList() ?? new List<PickupLocationResponseDto>()
+            };
+        }
+
+        return new OrderCalculateResponseDto
+        {
+            ListOrderItens = listItens,
+            Seller = sellerDto,
+            Total = listItens.Sum(item => item.TotalPrice),
+            Fee = 0 
+        };
     
     }
     
@@ -85,7 +116,11 @@ public class OrderReservationMapper
     {
         orderEntity.UpdateOrderStatus(MapStatus(orderReservationUpdateDto.OrderStatus));
     }
-    public static OrderReservationEntity ToCreateEntity(OrderReservationCreateDto orderReservationCreateDto, decimal reservationFee, decimal total, Guid sellerId)
+    public static OrderReservationEntity ToCreateEntity(OrderReservationCreateDto orderReservationCreateDto,
+        OrderReservationDetailsDto detail,
+        PickupLocationEntity pickupLocationEntity,
+        decimal reservationFee,
+        Guid sellerId)
     {
         try
         {
@@ -95,18 +130,18 @@ public class OrderReservationMapper
                     orderReservationCreateDto.FullName,
                     orderReservationCreateDto.Email,
                     orderReservationCreateDto.PhoneNumber,
-                    PickupLocationMapper.ToEntity(orderReservationCreateDto.PickupLocation),
-                    orderReservationCreateDto.PickupDate,
-                    orderReservationCreateDto.PickupDeadline,
+                    pickupLocationEntity,
+                    detail.PickupDate,
+                    detail.PickupDeadline,
                     reservationFee,
                     sellerId);
             }
             
             return OrderReservationEntity.CreateForCustomer(
                 orderReservationCreateDto!.UserId.Value,
-                PickupLocationMapper.ToEntity(orderReservationCreateDto.PickupLocation),
-                orderReservationCreateDto.PickupDate,
-                orderReservationCreateDto.PickupDeadline,
+                PickupLocationMapper.ToEntity(detail.PickupLocation),
+                detail.PickupDate,
+                detail.PickupDeadline,
                 reservationFee,
                 sellerId
             );

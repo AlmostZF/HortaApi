@@ -24,7 +24,7 @@ public class GetOrderUseCase
             if (customerId == null)
                 return Result<OrderReservationResponseDto>.Failure("Identificação do usuário inválida.", 401);
             
-            var orderReservationDto = await _orderReservationService.GetByIdAsync(customerId.Value);
+            var orderReservationDto = await _orderReservationService.GetBySellerIdAsync(customerId.Value);
             
             return Result<OrderReservationResponseDto>.Success(orderReservationDto,200);
         }

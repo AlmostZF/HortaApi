@@ -39,7 +39,7 @@ public class CustomerController: ControllerBase
         
         var result = await _getAllCustomerUseCase.ExecuteAsync();
         
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : NotFound();
     }
@@ -51,7 +51,7 @@ public class CustomerController: ControllerBase
         
         var result = await _getUserUseCase.ExecuteAsync(id);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : NotFound();
     }
@@ -63,7 +63,7 @@ public class CustomerController: ControllerBase
 
         var result = await _updateCustomerUseCase.ExecuteAsync(customerUpdateDto);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -74,7 +74,7 @@ public class CustomerController: ControllerBase
     {
         var result = await _createCustomerUseCase.ExecuteAsync(customerCreateDto);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Created()
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -86,7 +86,7 @@ public class CustomerController: ControllerBase
 
         var result = await _deleteCustomerUseCase.ExecuteAsync(id);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }

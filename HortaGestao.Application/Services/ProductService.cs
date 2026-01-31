@@ -29,21 +29,29 @@ public class ProductService: IProductService
         return ProductMapper.ToDto(productEntity);
     }
 
-    public async Task UpdateAsync(ProductUpdateDto productUpdateDTO)
+    public async Task UpdateAsync(ProductUpdateDto productUpdateDTO, Guid sellerId)
     {
         var existingProduct = await _productRepository.GetByIdAsync(productUpdateDTO.Id);
         if (existingProduct == null)
         {
             throw new InvalidOperationException("Produto não encontrado.");
         }
+
+
+        if (productUpdateDTO.Image == null)
+        {
+            ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO, existingProduct.Image, sellerId);    
+            await _productRepository.UpdateAsync(existingProduct);
+            return;
+        }
         
         var fileName = await _storageService.UploadFileAsync(productUpdateDTO.Image, "products");
         
-        
         await _storageService.DeleteFileAsync(existingProduct.Image, "products");
         
-        ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO, fileName);    
+        ProductMapper.ToUpdateEntity(existingProduct, productUpdateDTO, fileName, sellerId);    
         await _productRepository.UpdateAsync(existingProduct);
+        
     }
 
     public async Task UpdateStatusAsync(ProductUpdateStatusDto productUpdateStatusDto)
@@ -63,10 +71,10 @@ public class ProductService: IProductService
         await _productRepository.DeleteAsync(id);
     }
     
-    public async Task<Guid> AddAsync(ProductCreateDto productCreateDTO)
+    public async Task<Guid> AddAsync(ProductCreateDto productCreateDTO, Guid sellerId )
     {
         var fileName = await _storageService.SaveFileAsync(productCreateDTO.Image, "products");
-        var productEntity = ProductMapper.ToCreateEntity(productCreateDTO, fileName);
+        var productEntity = ProductMapper.ToCreateEntity(productCreateDTO, fileName, sellerId);
         await _productRepository.AddAsync(productEntity);
         return productEntity.Id;
     }

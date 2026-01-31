@@ -46,7 +46,7 @@ public class ProductEntity
 
     public void UpdateProductEntity(string name, string productType, decimal unitPrice, Guid sellerId,
         string conservationDays, string image, string shortDescription, string largeDescription,
-        string weight)
+        string weight, bool isActive)
     {
         Name = name;
         ProductType = StringToProductType(productType);
@@ -57,7 +57,7 @@ public class ProductEntity
         ShortDescription = shortDescription;
         LargeDescription = largeDescription;
         Weight = weight;
-        IsActive = false;
+        IsActive = isActive;
     }
 
     public static ProductType StringToProductType(string productType)

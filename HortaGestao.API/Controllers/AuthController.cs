@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
     {
         var result = await _loginUseCase.ExecuteAsync(login);
         
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
 
@@ -58,7 +58,7 @@ public class AuthController : ControllerBase
     { 
         var result = await _refreshUseCase.ExecuteAsync(refreshToken);
         
-        return result.Error == null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }

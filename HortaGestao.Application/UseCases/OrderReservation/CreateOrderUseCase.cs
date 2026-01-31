@@ -1,5 +1,6 @@
 using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Services;
 using HortaGestao.Application.Shared;
@@ -15,16 +16,16 @@ public class CreateOrderUseCase
         _orderReservationService = orderReservationService;
     }
 
-    public async Task<Result> ExecuteAsync(OrderReservationCreateDto orderReservationCreateDto)
+    public async Task<Result<List<CreateOrderReservationResponseDto>>> ExecuteAsync(OrderReservationCreateDto orderReservationCreateDto)
     {
         try
         {
-            await _orderReservationService.AddAsync(orderReservationCreateDto);
-            return Result.Success("Reserva criada com sucesso",200);
+           var listCreated = await _orderReservationService.AddAsync(orderReservationCreateDto);
+            return Result<List<CreateOrderReservationResponseDto>>.Success(listCreated,200);
         }
         catch (Exception e)
         {
-            return Result.Failure("Erro ao criar lista de compra", 500);
+            return Result<List<CreateOrderReservationResponseDto>>.Failure("Erro ao criar lista de compra", 500);
         }
     }
 }

@@ -25,7 +25,7 @@ public class UpdateQuantityUseCase
             if (sellerId == null)
                 return Result.Failure("Usuário não encontrado.", 404);
             
-            await _stockService.UpdateQuantityAsync(stockUpdateDto, identityId);
+            await _stockService.UpdateQuantityAsync(stockUpdateDto, sellerId.Value);
             return Result.Success("Stock atualizado com sucesso",200);
         }
         catch (Exception e)

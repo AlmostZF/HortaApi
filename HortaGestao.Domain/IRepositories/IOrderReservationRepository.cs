@@ -5,8 +5,9 @@ namespace HortaGestao.Domain.IRepositories;
 
 public interface IOrderReservationRepository
 {
-    Task<IEnumerable<OrderReservationEntity>> GetBySecurityCodeAsync(string securityCode);
-    Task<OrderReservationEntity> GetByIdAsync(Guid id);
+    Task<OrderReservationEntity> GetBySecurityCodeAsync(string securityCode, Guid sellerId);
+    Task<OrderReservationEntity> GetBySellerIdAsync(Guid id);
+    Task<OrderReservationEntity> GetByIdAsync(Guid id, Guid sellerId);
     Task UpdateStatusAsync(string status, Guid id);
     Task UpdateAsync(OrderReservationEntity order);
     Task DeleteAsync(Guid id);
