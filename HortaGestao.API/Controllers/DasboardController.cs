@@ -17,7 +17,7 @@ public class DasboardController:ControllerBase
         _getDashboardUseCase = getDashboardUseCase;
     }
     
-    [Authorize]
+    [Authorize(Policy = "SellerRights")]
     [HttpGet("{month}/{year}/{limit}")]
     public async Task<IActionResult> Get([FromRoute] int month, int year, int limit)
     {

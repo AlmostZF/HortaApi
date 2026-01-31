@@ -91,6 +91,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateOrderUseCase>();
         services.AddScoped<CalculateOrderUseCase>();
         services.AddScoped<RefreshUseCase>();
+        services.AddScoped<FinishOrderUserCase>();
         
         services.AddScoped<CreatePickupLocationUseCase>();
         services.AddScoped<UpdatePickupLocationUseCase>();

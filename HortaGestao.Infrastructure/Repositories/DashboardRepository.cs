@@ -50,25 +50,29 @@ public class DashboardRepository:IDashboardQueries
     public async Task<YearlyReportResponseDto> GetYearlyEvolution(Guid sellerId, int year)
     {
         var reservations = await _context.OrderReservation
-            .Where(r => r.SellerId == sellerId)
+            .Where(r => r.SellerId == sellerId && r.PickupDate.Year == year)
             .Include(r=>r.ListOrderItems)
-            .Where(r => r.ReservationDate.Year == year)
             .ToListAsync();
 
-        var salesEvolution = reservations
-            .Where(r => r.OrderStatus == StatusOrder.Confirmada)
-            .GroupBy(r => r.ReservationDate.Month)
-            .Select(g => new ChartDataResponseDto
+        var monthlyDate = reservations
+            .GroupBy(r=>r.PickupDate.Month)
+            .Select(monthGroup => new MonthlyDetailDto
             {
-                Label = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key),
-                Quantity = g.Count(),
-                Value = g.Sum(r => r.ListOrderItems
-                    .Sum(i => i.TotalPrice))
+                Month = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthGroup.Key),
+                MonthNumber = monthGroup.Key,
+                Statuses = monthGroup.GroupBy(r => r.OrderStatus)
+                    .Select(statusGroup => new ChartDataResponseDto
+                    {
+                        Label = statusGroup.Key.ToString(),
+                        Quantity = statusGroup.Count(),
+                        Value = statusGroup.Sum(r => r.ListOrderItems.Sum(i => i.TotalPrice))
+                    }).ToList(),
+                TotalValue = monthGroup.Sum(r => r.ListOrderItems.Sum(i => i.TotalPrice)),
             })
-            .OrderBy(x => x.Label)
+            .OrderBy(x => x.MonthNumber)
             .ToList();
         
-        var statusComparison = reservations
+        var yearlySummary = reservations
             .GroupBy(r => r.OrderStatus)
             .Select(g=> new ChartDataResponseDto
             {
@@ -81,8 +85,8 @@ public class DashboardRepository:IDashboardQueries
         
         return new YearlyReportResponseDto
         {
-            SalesEvolution = salesEvolution,
-            StatusComparison = statusComparison
+            MonthlyData = monthlyDate,
+            YearlyTotalStatus = yearlySummary
         };
     }
 
