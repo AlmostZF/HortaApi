@@ -16,12 +16,14 @@ public class OrderReservationController: ControllerBase
     private readonly CreateOrderUseCase _createOrderUseCase;
     private readonly DeleteOrderUseCase _deleteOrderUseCase;
     private readonly GetAllOrderUseCase _getAllOrderUseCase;
-    private readonly CalculateOrderUseCase _calculateOrderUseCase;
+    private readonly CalculateOrderForCheckoutUseCase _calculateOrderForCheckoutUseCase;
+    private readonly CalculateOrderForViewUseCase _calculateOrderForViewUseCase;
     private readonly GetOrderBySecurityCodeUseCase _getOrderBySecurityUseCase;
     private readonly GetOrderByStatusUseCase _getOrderByStatusUseCase;
     private readonly GetOrderUseCase _getOrderUseCase;
     private readonly UpdateOrderUseCase _updateOrderUseCase;
     private readonly FinishOrderUserCase _finishOrderUserCase;
+    private readonly CancelOrderUserCase _cancelOrderUserCase;
 
     public OrderReservationController(
         CreateOrderUseCase createOrderUseCase,
@@ -31,8 +33,10 @@ public class OrderReservationController: ControllerBase
         GetOrderByStatusUseCase getOrderByStatusUseCase,
         GetOrderUseCase getOrderUseCase,
         UpdateOrderUseCase updateOrderUseCase,
-        CalculateOrderUseCase calculateOrderUseCase,
-        FinishOrderUserCase finishOrderUserCase
+        CalculateOrderForCheckoutUseCase calculateOrderForCheckoutUseCase,
+        CalculateOrderForViewUseCase calculateOrderForViewUseCase,
+        FinishOrderUserCase finishOrderUserCase,
+        CancelOrderUserCase cancelOrderUserCase
         )
     {
         _createOrderUseCase = createOrderUseCase;
@@ -42,8 +46,10 @@ public class OrderReservationController: ControllerBase
         _getOrderByStatusUseCase = getOrderByStatusUseCase;
         _getOrderUseCase = getOrderUseCase;
         _updateOrderUseCase = updateOrderUseCase;
-        _calculateOrderUseCase = calculateOrderUseCase;
+        _calculateOrderForCheckoutUseCase = calculateOrderForCheckoutUseCase;
+        _calculateOrderForViewUseCase = calculateOrderForViewUseCase;
         _finishOrderUserCase = finishOrderUserCase;
+        _cancelOrderUserCase = cancelOrderUserCase;
     }
     
     [Authorize(Policy = "ActiveUser")]
@@ -119,10 +125,20 @@ public class OrderReservationController: ControllerBase
     }
     
     [AllowAnonymous]
-    [HttpPost("pending")]
-    public async Task<IActionResult> Calculate([FromBody]OrderCalculateDto orderCalculateDto)
+    [HttpPost("view")]
+    public async Task<IActionResult> CalculateForView([FromBody]OrderCalculateDto orderCalculateDto)
     {
-        var result = await _calculateOrderUseCase.ExecuteAsync(orderCalculateDto);
+        var result = await _calculateOrderForViewUseCase.ExecuteAsync(orderCalculateDto);
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, result.Error);
+    }
+    
+    [AllowAnonymous]
+    [HttpPost("checkout")]
+    public async Task<IActionResult> CalculateForCheckout([FromBody]OrderCalculateDto orderCalculateDto)
+    {
+        var result = await _calculateOrderForCheckoutUseCase.ExecuteAsync(orderCalculateDto);
         return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
@@ -148,6 +164,17 @@ public class OrderReservationController: ControllerBase
         
         Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
         var result = await _finishOrderUserCase.ExecuteAsync(updateStatusOrderDto.Id, currentUserId);
+        return result.IsSuccess
+            ? Ok(result)
+            : StatusCode(result.StatusCode, result.Error);
+    }
+    
+    [AllowAnonymous]
+    [Authorize(Policy = "ActiveUser")]
+    [HttpPut("cancel")]
+    public async Task<IActionResult> Cancel([FromBody]UpdateStatusOrderDto updateStatusOrderDto)
+    {
+        var result = await _cancelOrderUserCase.ExecuteAsync(updateStatusOrderDto.SecurityCode, updateStatusOrderDto.SellerId.Value);
         return result.IsSuccess
             ? Ok(result)
             : StatusCode(result.StatusCode, result.Error);

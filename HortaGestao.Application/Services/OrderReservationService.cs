@@ -56,7 +56,7 @@ public class OrderReservationService : IOrderReservationService
         return OrderReservationMapper.ToDto(orderReservation);
     }
 
-    public async Task FinishOrder(Guid guid, Guid sellerId)
+    public async Task FinishOrderAsync(Guid guid, Guid sellerId)
     {
         var orderReservation = await _orderReservationRepository.GetByIdAsync(guid, sellerId);
         if (orderReservation == null)
@@ -65,32 +65,98 @@ public class OrderReservationService : IOrderReservationService
         await _orderReservationRepository.UpdateStatusAsync("Confirmada",guid);
     }
     
+    public async Task CancelOrderAsync(string securityCode, Guid sellerId)
+    {   
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            var orderReservation = await _orderReservationRepository.GetBySecurityCodeAsync(securityCode, sellerId);
+            if (orderReservation == null)
+                throw new InvalidOperationException("Reserva não encontrada.");
+        
+            var productsIds = orderReservation.ListOrderItems
+                .Select(x => x.ProductId).Distinct();
+            
+            var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
+
+            foreach (var item in stockEntities)
+            {
+                var orderItem = orderReservation.ListOrderItems.
+                    FirstOrDefault(x => x.ProductId == item.ProductId);
+                if (orderItem != null)
+                {
+                    item.AddQuantity(orderItem.Quantity);
+                }
+                
+            }
+            await _stockRepository.UpdateRangeAsync(stockEntities);
+        
+            await _orderReservationRepository.UpdateStatusAsync("Cancelada",orderReservation.Id);
+            
+            await _unitOfWork.CommitAsync(); 
+        }
+        catch (Exception e)
+        {
+            await _unitOfWork.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
+
+    }
+    
     public async Task UpdateAsync(OrderReservationUpdateDto orderReservationUpdateDTO)
     {
-        var orderReservation = await _orderReservationRepository.GetBySellerIdAsync(orderReservationUpdateDTO.Id);
-        if (orderReservation == null)
-            throw new InvalidOperationException("Reserva não encontrada.");
-        
-        var productsIds = orderReservation.ListOrderItems
-            .Select(x => x.ProductId).Distinct();
-        var productsEntities = await _productRepository.GetManyProducts(productsIds);
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {  
+            var orderReservation = await _orderReservationRepository.GetBySellerIdAsync(orderReservationUpdateDTO.Id);
+            if (orderReservation == null)
+                throw new InvalidOperationException("Reserva não encontrada.");
+            
+            var productsIds = orderReservation.ListOrderItems
+                .Select(x => x.ProductId).Distinct();
+            
+            var productsEntities = await _productRepository.GetManyProducts(productsIds);
+            
+            var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
 
-        var items = await CalculateOrderItemsAsync(productsEntities,
-            orderReservationUpdateDTO.listOrderItens);
-        
-        var totalValue = items.Sum(i => i.UnitPrice * i.Quantity);
-        var fee = _calculate.CalculateFeeCalculate(totalValue);
-        
-        if (!orderReservation.ListOrderItems.SequenceEqual(items))
-        {
-            foreach (var item in items)
+            foreach (var item in stockEntities)
             {
-                orderReservation.AddItem(item.ProductId, item.SellerId, item.Quantity, item.UnitPrice);
+                var orderItem = orderReservation.ListOrderItems.
+                    FirstOrDefault(x => x.ProductId == item.ProductId);
+                if (orderItem != null)
+                {
+                    item.AddQuantity(orderItem.Quantity);
+                }
+                
             }
+            await _stockRepository.UpdateRangeAsync(stockEntities);
+            
+            var items = await CalculateOrderItemsAsync(productsEntities,
+                orderReservationUpdateDTO.listOrderItens);
+            
+            var totalValue = items.Sum(i => i.UnitPrice * i.Quantity);
+            var fee = _calculate.CalculateFeeCalculate(totalValue);
+            
+            if (!orderReservation.ListOrderItems.SequenceEqual(items))
+            {
+                foreach (var item in items)
+                {
+                    orderReservation.AddItem(item.ProductId, item.SellerId, item.Quantity, item.UnitPrice);
+                }
+            }
+            
+            OrderReservationMapper.ToUpdateEntity(orderReservation, orderReservationUpdateDTO, items, fee);
+            await _orderReservationRepository.UpdateAsync(orderReservation);
+                        
+            await _unitOfWork.CommitAsync();
         }
-        
-        OrderReservationMapper.ToUpdateEntity(orderReservation, orderReservationUpdateDTO, items, fee);
-        await _orderReservationRepository.UpdateAsync(orderReservation);
+        catch (Exception e)
+        {
+            await _unitOfWork.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task DeleteAsync(Guid id)
@@ -110,7 +176,25 @@ public class OrderReservationService : IOrderReservationService
                     .Select(x => x.ProductId).Distinct();
                 
                 var productsEntities = await _productRepository.GetManyProducts(productsIds);
+                var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
 
+                foreach (var item in stockEntities)
+                {
+                    var orderItem = orderDetail.listOrderItens.
+                        FirstOrDefault(x => x.ProductId == item.ProductId);
+                    if (orderItem != null)
+                    {
+                        if (item.Quantity < orderItem.Quantity)
+                            throw new Exception("estoque insuficiente");
+
+                        item.RemoveQuantity(orderItem.Quantity);
+                    }
+                    
+                    await _stockRepository.UpdateQuantityAsync(item);
+                    
+                }
+
+                
                 var items = await CalculateOrderItemsAsync(productsEntities,
                     orderDetail.listOrderItens);
             
@@ -162,35 +246,61 @@ public class OrderReservationService : IOrderReservationService
         var orderReservationEntities = await _orderReservationRepository.GetAllAsync();
         return OrderReservationMapper.ToDtoList(orderReservationEntities);
     }
-
-    public async Task<OrderCalculateResponseDto> CalculateAsync(OrderCalculateDto orderCalculateDTO)
+    
+    public async Task<OrderCalculateResponseDto> CalculateForViewAsync(OrderCalculateDto orderCalculateDTO) 
     {
-       var productsIds = orderCalculateDTO.listOrderItens
-           .Select(x => x.ProductId).Distinct();
+        var productIds = orderCalculateDTO.listOrderItens.Select(x => x.ProductId)
+            .Distinct();
+        
+        var (products, stockDict) = await GetOrderMetadataAsync(productIds);
+        
+        var items = await CalculateOrderItemsAsync(products,
+            orderCalculateDTO.listOrderItens);
+        return OrderReservationMapper.ToCalculatedOrderDTO(items, products, stockDict);
+    }
 
-       var productsEntities = await _productRepository.GetManyProducts(productsIds);
-       var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
-       
-       var stockDict = stockEntities.ToDictionary(s => s.ProductId, s => s.Quantity);
-       var validatedItems = new List<OrderReservationItemDto>();
-       
-       foreach (var itemDto in orderCalculateDTO.listOrderItens)
-       {
-            stockDict.TryGetValue(itemDto.ProductId, out var quantity);
-            
+
+    public async Task<OrderCalculateResponseDto> CalculateForCheckoutAsync(OrderCalculateDto orderCalculateDTO)
+    {
+        var productIds = orderCalculateDTO.listOrderItens.Select(x => x.ProductId)
+            .Distinct();
+        
+        var (productsEntities, stockDictionary) = await GetOrderMetadataAsync(productIds);
+        
+        var validatedItems = ValidateStock(orderCalculateDTO.listOrderItens, stockDictionary);
+        var items = await CalculateOrderItemsAsync(productsEntities,
+            validatedItems);
+        
+        return OrderReservationMapper.ToCalculatedOrderDTO(items, productsEntities, stockDictionary);
+    }
+
+    public List<OrderReservationItemDto> ValidateStock(List<OrderReservationItemDto> listOrderItens,
+        Dictionary<Guid,int> stockDictionary)
+    {
+        var validatedItems = new List<OrderReservationItemDto>();
+        
+        foreach (var itemDto in listOrderItens)
+        {
+            stockDictionary.TryGetValue(itemDto.ProductId, out var quantity);
+           
             if(itemDto.Quantity > quantity)
                 itemDto.Quantity = quantity;
             
             validatedItems.Add(itemDto);
-       }
-       
-       
-
-       var items = await CalculateOrderItemsAsync(productsEntities,
-           validatedItems);
+        }
         
-       return OrderReservationMapper.ToCalculatedOrderDTO(items, productsEntities, stockDict);
+        return validatedItems;
+    }
+
+    private async Task<(IEnumerable<ProductEntity> products, Dictionary<Guid, int> stock)> GetOrderMetadataAsync(
+        IEnumerable<Guid> productIds)
+    {
+        var productsEntities = await _productRepository.GetManyProducts(productIds);
+        var stockEntities = await _stockRepository.GetByProductIdsAsync(productIds);
        
+        var stockDictionary = stockEntities.ToDictionary(s => s.ProductId, s => s.Quantity);
+    
+        return (productsEntities, stockDictionary);
     }
     
     private async Task<ICollection<OrderReservationItemEntity>> CalculateOrderItemsAsync(

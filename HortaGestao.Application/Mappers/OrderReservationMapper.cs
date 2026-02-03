@@ -89,7 +89,7 @@ public class OrderReservationMapper
                 ListPickupLocations = seller.PickupLocations?.Select(loc => new PickupLocationResponseDto
                 {
                     Id = loc.Id,
-                    Name = "Endereço ",
+                    CustomName = loc.Address.CustomName,
                     Street = loc.Address.Street,
                     Number = loc.Address.Number,
                     City = loc.Address.City,

@@ -82,7 +82,7 @@ public class ProductController: ControllerBase
         var result = await _deleteProductUseCase.ExecuteAsync(id);
 
         return result.IsSuccess
-            ? Ok(result.Message)
+            ? Ok(result)
             : StatusCode(result.StatusCode, result.Error);
     }
     
@@ -114,7 +114,7 @@ public class ProductController: ControllerBase
         var result = await _updateProductUseCase.ExecuteAsync(productUpdateDto, currentUserId);
 
         return result.IsSuccess
-            ? Ok(result.Message)
+            ? Ok(result)
             : StatusCode(result.StatusCode, result.Error);
     }
     
@@ -125,7 +125,7 @@ public class ProductController: ControllerBase
         var result = await _updateProductStatusUseCase.ExecuteAsync(publiProductUpdateStatusDto);
 
         return result.IsSuccess
-            ? Ok(result.Message)
+            ? Ok(result)
             : StatusCode(result.StatusCode, result.Error);
     }
     

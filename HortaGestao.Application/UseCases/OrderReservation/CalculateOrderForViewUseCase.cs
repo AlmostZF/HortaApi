@@ -5,11 +5,11 @@ using HortaGestao.Application.Shared;
 
 namespace HortaGestao.Application.UseCases.OrderReservation;
 
-public class CalculateOrderForCheckoutUseCase
+public class CalculateOrderForViewUseCase
 {
     private readonly IOrderReservationService _orderReservationService;
 
-    public CalculateOrderForCheckoutUseCase(IOrderReservationService orderReservationService)
+    public CalculateOrderForViewUseCase(IOrderReservationService orderReservationService)
     {
         _orderReservationService = orderReservationService;
     }
@@ -18,7 +18,7 @@ public class CalculateOrderForCheckoutUseCase
     {
         try
         {
-            var OrderCalculated = await _orderReservationService.CalculateForCheckoutAsync(orderCalculateDTO);
+            var OrderCalculated = await _orderReservationService.CalculateForViewAsync(orderCalculateDTO);
             return Result<OrderCalculateResponseDto>.Success(OrderCalculated,200);
         }
         catch (Exception e)

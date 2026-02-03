@@ -75,6 +75,7 @@ public class PickupLocationService : IPickupLocationService
                         ZipCode = pickupLocantion.ZipCode,
                         State = pickupLocantion.State,
                         PickupDays = pickupLocantion.PickupDays,
+                        CustomName = pickupLocantion.CustomName,
                         SellerId = sellerId
                     };
                     

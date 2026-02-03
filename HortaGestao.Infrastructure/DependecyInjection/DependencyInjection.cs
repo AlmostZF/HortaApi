@@ -89,7 +89,8 @@ public static class DependencyInjection
         services.AddScoped<GetOrderByStatusUseCase>();
         services.AddScoped<GetOrderUseCase>();
         services.AddScoped<UpdateOrderUseCase>();
-        services.AddScoped<CalculateOrderUseCase>();
+        services.AddScoped<CalculateOrderForCheckoutUseCase>();
+        services.AddScoped<CalculateOrderForViewUseCase>();
         services.AddScoped<RefreshUseCase>();
         services.AddScoped<FinishOrderUserCase>();
         services.AddScoped<CancelOrderUserCase>();

@@ -4,7 +4,7 @@ namespace HortaGestao.Application.DTOs.Response;
 public class PickupLocationResponseDto
 {
     public Guid Id { get; set; }
-    public string? Name { get; set; }
+    public string? CustomName { get; set; }
     public string Street { get; set; }
     public string Number { get; set; }
     public string City { get; set; }

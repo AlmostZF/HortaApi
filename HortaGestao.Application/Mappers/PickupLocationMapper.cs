@@ -15,6 +15,7 @@ public class PickupLocationMapper
             City = pickupLocationEntity.Address.City,
             Number = pickupLocationEntity.Address.Number,
             Street = pickupLocationEntity.Address.Street,
+            CustomName = pickupLocationEntity.Address.CustomName,
             ZipCode = pickupLocationEntity.Address.ZipCode,
             State = pickupLocationEntity.Address.State,
             Neighborhood = pickupLocationEntity.Address.Neighborhood,
@@ -38,7 +39,8 @@ public class PickupLocationMapper
             pickupLocationCreateDto.City,
             pickupLocationCreateDto.ZipCode,
             pickupLocationCreateDto.State,
-            pickupLocationCreateDto.Neighborhood
+            pickupLocationCreateDto.Neighborhood,
+            pickupLocationCreateDto.CustomName
         );
         
         var availableDays = pickupLocationCreateDto.PickupDays.Select(day => new PickupDay(day));
@@ -56,7 +58,8 @@ public class PickupLocationMapper
                 pickupLocationUpdateDto.City,
                 pickupLocationUpdateDto.ZipCode,
                 pickupLocationUpdateDto.State,
-                pickupLocationUpdateDto.Neighborhood
+                pickupLocationUpdateDto.Neighborhood,
+                pickupLocationUpdateDto.CustomName
             );
 
             pickupLocationEntity.ChangeAddress(address);
@@ -78,7 +81,8 @@ public class PickupLocationMapper
             pickupLocationCreateDto.City,
             pickupLocationCreateDto.ZipCode,
             pickupLocationCreateDto.State,
-            pickupLocationCreateDto.Neighborhood
+            pickupLocationCreateDto.Neighborhood,
+            pickupLocationCreateDto.CustomName
         );
 
         var pickupPoint = new PickupLocationEntity(
