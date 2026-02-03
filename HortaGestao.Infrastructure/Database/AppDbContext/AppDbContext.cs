@@ -75,6 +75,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             
             entity.OwnsOne(p => p.Address, a =>
             {
+                a.Property(ad => ad.CustomName).HasColumnName("Address_Custom_Name");
                 a.Property(ad => ad.Street).HasColumnName("Address_Street");
                 a.Property(ad => ad.Number).HasColumnName("Address_Number");
                 a.Property(ad => ad.City).HasColumnName("Address_City");

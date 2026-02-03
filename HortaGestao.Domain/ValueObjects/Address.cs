@@ -2,6 +2,7 @@ namespace HortaGestao.Domain.ValueObjects;
 
 public class Address
 {
+    public string CustomName { get; private set; }
     public string Street { get; private set; }
     public string Number { get; private set; }
     public string City { get; private set; }
@@ -9,7 +10,8 @@ public class Address
     public string State { get; private set; }
     public string Neighborhood { get; private set; }
     
-    public Address(string street, string number, string city, string zipCode, string state, string neighborhood)
+    public Address(string street, string number, string city, string zipCode, string state, string neighborhood,
+        string customName)
     {
         Street = street;
         Number = number;
@@ -17,6 +19,7 @@ public class Address
         ZipCode = zipCode;
         State = state;
         Neighborhood = neighborhood;
+        CustomName = customName;
     }
 
     private Address() { }
