@@ -50,12 +50,31 @@ Implementamos um modelo de tokens duplos para maior segurança, gerenciado via e
 3. **Notificação:** O RabbitMQ dispara o evento para os vendedores.
 4. **Confirmação:** O vendedor valida o código na entrega, alterando o status para `Confirmada`.
 
+<img width="1421" height="892" alt="FluxoReserva" src="https://github.com/user-attachments/assets/03c56f12-1e91-43ed-93f3-924275b0bf0e" />
+
+
+## 🔁 Fluxo do Dashboard
+
+1. **Cadastra:** Vendedor cadastra produto e quantidade em estoque.
+2. **Controle:** Vendedor ativa e desativa produto para o clientes vizualizar ou não.
+3. **Acessa Dashboard:** O vendedor pode verificar os dados de suas reservas por status e relatório anual.
+4. **Relatório:** O vendedor pode gerar um relatório mensal ou anual de suas reservas.
+
+<img width="1398" height="923" alt="fluxoVendedor" src="https://github.com/user-attachments/assets/3f4e66a0-da6b-4316-bf5e-8b21b538fd83" />
+
+
 ## 🧪 Estratégia de Testes
 
 A camada **Horta.Test** é fundamental para garantir a confiabilidade das regras de negócio (Domain) e dos fluxos de aplicação.
 
 - **Testes Unitários:** Focados nas entidades de domínio e cálculos de taxas.
 - **Testes de Integração:** Validam a persistência no banco e a comunicação com serviços externos.
+
+## 📩 Notificações Multicanal
+
+No futuro, novos consumidores serão adicionados para permitir:
+* **WhatsApp:** Envio automático do `CodigoSeguranca` e endereço de retirada.
+* **E-mail:** Confirmação detalhada com o resumo dos itens de múltiplos vendedores.
 
 **Como rodar os testes:**
 ```bash
