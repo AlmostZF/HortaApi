@@ -33,6 +33,17 @@ public class StockRepository : IStockRepository
         return stock;
     }
 
+    public async Task<IEnumerable<StockEntity?>> GetByProductIdsAsync(IEnumerable<Guid> productId)
+    {
+        var listStock = await _context.Stock
+            .Where(i => productId.Contains(i.Product.Id))
+            .Include(s => s.Product)
+                .ThenInclude(p=> p.Seller)
+            .ToListAsync();
+        
+        return listStock;
+    }
+
     public async Task<StockEntity> GetByIdAsync(Guid stockId,  Guid sellerId)
     {
         var stock = await _context.Stock
@@ -52,6 +63,12 @@ public class StockRepository : IStockRepository
         _context.Stock.Update(stockEntity);
         await _context.SaveChangesAsync();
 
+    }
+
+    public async Task UpdateRangeAsync(IEnumerable<StockEntity> stockEntities)
+    {
+        _context.Stock.UpdateRange(stockEntities);
+        await _context.SaveChangesAsync();
     }
 
     public async Task AddAsync(StockEntity stock)

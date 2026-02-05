@@ -41,7 +41,7 @@ public class StockController: ControllerBase
         Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
         var result = await _getAllStockUseCase.ExecuteAsync(currentUserId);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -57,7 +57,7 @@ public class StockController: ControllerBase
         
         var result = await _getProductStockUseCase.ExecuteAsync(id, currentUserId);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
 
@@ -73,7 +73,7 @@ public class StockController: ControllerBase
         Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
         var result = await _getStockByProductIdUseCase.ExecuteAsync(id,currentUserId);
 
-        return result.Value != null
+        return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, result.Error);
 
@@ -91,7 +91,7 @@ public class StockController: ControllerBase
         
         var result = await _createStockUseCase.ExecuteAsync(stockCreateDto, currentUserId);
 
-        return result.Message != null
+        return result.IsSuccess
             ? Created()
             : StatusCode(result.StatusCode, result.Error);
     }
@@ -107,7 +107,7 @@ public class StockController: ControllerBase
         
         var result = await _updateStockUseCase.ExecuteAsync(stockUpdateDto, currentUserId);
         
-        return result.Message != null
+        return result.IsSuccess
             ? Ok(result.Message)
             : StatusCode(result.StatusCode, result.Error);
     }

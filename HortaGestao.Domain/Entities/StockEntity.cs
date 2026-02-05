@@ -26,7 +26,7 @@ public class StockEntity
     public void UpdateStock(Guid productId, decimal unitPrice, int quantity)
     {
         ProductId = productId;
-        AddQuantity(quantity);
+        editQuantity(quantity);
         CalculateTotal(unitPrice, quantity);
     }
 
@@ -34,7 +34,12 @@ public class StockEntity
     {
         Total = StockMoney.CalculateTotal(unitPrice,quantity).Amount;
     }
-    
+
+    public void editQuantity(int amount)
+    {
+        Quantity = amount;
+    }
+
     public void AddQuantity(int amount)
     {
         if (amount <= 0)
