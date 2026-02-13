@@ -110,6 +110,48 @@ public class StockServiceTests
         _stockRepositoryMock.Verify(repo => repo.GetByProductIdAsync(productMoc.Id, sellerMock.Id), Times.Once);
     }
 
+    [Fact]
+    public async Task TestGetAllStock()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var expectedStocks = new List<StockEntity>
+        {
+            new StockEntity(productId, 10, 5),
+            new StockEntity(Guid.NewGuid(), 20, 0)
+        };
+        var pickupLocation = MockPicupLocation(sellerId);
+        
+        var sellerMock = new SellerEntity("Guilherme", "2222");
+        SetProperty(sellerMock, "Id", sellerId);
+        
+        sellerMock.AddPickupLocation(pickupLocation);
+        
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Seller", sellerMock);
+        
+        var stockMoc = new StockEntity(productId, 0, 0);
+        foreach (var stock in expectedStocks)
+        {
+            SetProperty(stock, "Product", productMoc);
+        }
+
+        _stockRepositoryMock.Setup(repo => repo.GetAllAsync(sellerId))
+            .ReturnsAsync(expectedStocks);
+        
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(sellerId));
+
+        var result = await _stockService.GetAllAsync(sellerId);
+
+        Assert.NotNull(result);
+        Assert.Equal(expectedStocks.Count, result.Count());
+        Assert.Contains(result, x => x.ProductId == productId);
+
+        _stockRepositoryMock.Verify(repo => repo.GetAllAsync(sellerId), Times.Once);
+
+    }
+
     private ProductEntity CreateProductEntity(Guid sellerId)
     {
         var productType = new ProductType();

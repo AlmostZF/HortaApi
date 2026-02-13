@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\HortaGestao.Application\HortaGestao.Application.csproj" />
     <ProjectReference Include="..\HortaGestao.Domain\HortaGestao.Domain.csproj" />
   </ItemGroup>
