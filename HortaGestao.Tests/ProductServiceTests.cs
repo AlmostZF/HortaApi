@@ -63,7 +63,7 @@ public class ProductServiceTests
     }
     
     [Fact]
-    public async Task TestGetInativeProductById_ShouldReturnNull()
+    public async Task TestGetInactiveProductById_ShouldReturnNull()
     {
         var sellerId = Guid.NewGuid();
         var productId = Guid.NewGuid();
@@ -87,16 +87,12 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task TestFiterProducts()
+    public async Task TestFilterProducts()
     {
         var sellerId = Guid.NewGuid();
         var productId = Guid.NewGuid();
 
-        var dto = new ProductFilterDto
-        {
-            Category = "Verduras",
-            Name = "Produto"
-        };
+        var dto = CreateFilterDto("Verduras");
 
         var sellerMoc = new SellerEntity("Guilherme", "2222");
         SetProperty(sellerMoc, "Id", sellerId);
@@ -130,17 +126,15 @@ public class ProductServiceTests
         var sellerId = Guid.NewGuid();
         var productId = Guid.NewGuid();
 
-        var dto = new ProductFilterDto
-        {
-            Category = "Frutas"
-        };
+        var dto = CreateFilterDto();
         
         var sellerMoc = new SellerEntity("Guilherme", "2222");
         SetProperty(sellerMoc, "Id", sellerId);
 
         var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Seller", sellerMoc);
         SetProperty(productMoc, "Id", productId);
-        SetProperty(productMoc, "SellerId", sellerId);
+        SetProperty(productMoc, "IsActive", true);
 
         _productRepositoryMock.Setup(repo => repo.FilterAsync(It.IsAny<ProductFilter>()))
             .ReturnsAsync(new List<ProductEntity>());
@@ -153,6 +147,82 @@ public class ProductServiceTests
         Assert.Empty(result.Data);
         Assert.Equal(0, result.Pagination.TotalItems);
 
+    }
+
+    [Fact]
+    public async Task TestUpdateProduct()
+    {
+        var productId = Guid.NewGuid();
+        var sellerId = Guid.NewGuid();
+
+        var dto = CreateProductUpdateDto(productId);
+
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Id", productId);
+        
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId))
+            .ReturnsAsync(productMoc);
+
+        _productRepositoryMock.Setup(repo => repo.UpdateAsync(It.IsAny<ProductEntity>()))
+            .Returns(Task.CompletedTask);
+
+        await _productService.UpdateAsync(dto, sellerId);
+
+        _productRepositoryMock.Verify(repo => repo.UpdateAsync(
+            It.Is<ProductEntity>(p => p.Id == productId && 
+                                      p.Name == dto.Name && 
+                                      p.UnitPrice == dto.UnitPrice &&
+                                      p.SellerId == sellerId
+            )));
+    }
+
+    [Fact]
+    public async Task TestUpdateProductStatus()
+    {
+        var productId = Guid.NewGuid();
+        var sellerId = Guid.NewGuid();
+
+        var dto = CreateProductUpdateStatusDto(productId, true);
+
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Id", productId);
+
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId)).ReturnsAsync(productMoc);
+
+        _productRepositoryMock.Setup(repo => repo.UpdateAsync(It.IsAny<ProductEntity>()))
+            .Returns(Task.CompletedTask);
+        
+        await _productService.UpdateStatusAsync(dto);
+
+        _productRepositoryMock.Verify(repo => repo.UpdateAsync(
+            It.Is<ProductEntity>(p => p.IsActive == true)));
+    }
+
+    private ProductUpdateStatusDto CreateProductUpdateStatusDto(Guid productId, bool isActive)
+    {
+        return new ProductUpdateStatusDto
+        {
+            IsActive = isActive,
+            Id = productId
+        };
+    }
+
+    private ProductUpdateDto CreateProductUpdateDto(Guid productId)
+    {
+        return new ProductUpdateDto
+        {
+            Id = productId,
+            UnitPrice = 5,
+            Name = "Produto Editado"
+        };
+    }
+
+    private ProductFilterDto CreateFilterDto(string? category = "Frutas")
+    {
+        return new ProductFilterDto {
+            Category = category,
+            Name = "Produto"
+        };
     }
 
 
@@ -198,18 +268,4 @@ public class ProductServiceTests
             .SetValue(obj, value);
     }
     
-    private PickupLocationEntity MockPicupLocation(Guid sellerId)
-    {
-        var addresMock = new Address("street", "number", "city", "zipCode", "state",
-            "neighborhood", "customName");
-        var pickupDays = new List<PickupDay>
-        {
-            new PickupDay(DayOfWeek.Monday),
-            new PickupDay(DayOfWeek.Tuesday),
-        };
-        
-        var mockPickupLocation = new PickupLocationEntity(addresMock, pickupDays, sellerId);
-        return mockPickupLocation;
-    }
-
 }
