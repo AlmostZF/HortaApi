@@ -27,7 +27,7 @@ public class ProductServiceTests
     public async Task TestCreateProduct()
     {
         var sellerId = Guid.NewGuid();
-        var dto = CreateProductDto(); 
+        var dto = CreateProductDto("produto", "fruta"); 
         
         await _productService.AddAsync(dto, sellerId);
         
@@ -42,28 +42,121 @@ public class ProductServiceTests
     {
         var sellerId = Guid.NewGuid();
         var productId = Guid.NewGuid();
-        var pickupLocation = MockPicupLocation(sellerId);
         
         var sellerMock = new SellerEntity("Guilherme", "2222");
         SetProperty(sellerMock, "Id", sellerId);
         
-        sellerMock.AddPickupLocation(pickupLocation);
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Id", productId);
+        SetProperty(productMoc, "Seller", sellerMock);
+        SetProperty(productMoc, "IsActive", true);
+
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productMoc.Id)).ReturnsAsync(productMoc);
+
+        var result = await _productService.GetByIdAsync(productId);
+        
+        Assert.NotNull(result);
+        Assert.Equal("Produto", result.Name);
+
+        _productRepositoryMock.Verify(repo => repo.GetByIdAsync(productId), Times.Once);
+
+    }
+    
+    [Fact]
+    public async Task TestGetInativeProductById_ShouldReturnNull()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        
+        var sellerMock = new SellerEntity("Guilherme", "2222");
+        SetProperty(sellerMock, "Id", sellerId);
         
         var productMoc = CreateProductEntity(sellerId);
-        SetProperty(productMoc, "Seller", sellerMock);
         SetProperty(productMoc, "Id", productId);
+        SetProperty(productMoc, "Seller", sellerMock);
+        SetProperty(productMoc, "IsActive", false);
 
-        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(sellerId)).ReturnsAsync(productMoc);
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productMoc.Id)).ReturnsAsync(productMoc);
 
-        var result = await _productService.GetByIdAsync(sellerId);
+        var result = await _productService.GetByIdAsync(productId);
+        
+        Assert.Null(result);
+        
+        _productRepositoryMock.Verify(repo => repo.GetByIdAsync(productId), Times.Once);
 
-        Assert.NotNull(result);
-        Assert.Equal("produto", result.Name);
+    }
+
+    [Fact]
+    public async Task TestFiterProducts()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var dto = new ProductFilterDto
+        {
+            Category = "Verduras",
+            Name = "Produto"
+        };
+
+        var sellerMoc = new SellerEntity("Guilherme", "2222");
+        SetProperty(sellerMoc, "Id", sellerId);
+
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Seller", sellerMoc);
+        SetProperty(productMoc, "Id", productId);
+        SetProperty(productMoc, "IsActive", true);
+        
+        _productRepositoryMock.Setup(repo => repo.FilterAsync(It.Is<ProductFilter>(f => 
+            f.Category == "Verduras" && 
+            f.Name == "Produto"
+        )))
+        .ReturnsAsync(new List<ProductEntity> { productMoc });
+        
+        _productRepositoryMock.Setup(repo => repo.CountAsync(It.IsAny<ProductFilter>()))
+           .ReturnsAsync(1); 
+
+        var result = await _productService.FilterAsync(dto);
+
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data); 
+        Assert.Equal("Verduras", result.Data.First().ProductType); 
+        
+        _productRepositoryMock.Verify(repo => repo.FilterAsync(It.IsAny<ProductFilter>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task TestFilterProduct_ShouldReturnEmpty()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var dto = new ProductFilterDto
+        {
+            Category = "Frutas"
+        };
+        
+        var sellerMoc = new SellerEntity("Guilherme", "2222");
+        SetProperty(sellerMoc, "Id", sellerId);
+
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Id", productId);
+        SetProperty(productMoc, "SellerId", sellerId);
+
+        _productRepositoryMock.Setup(repo => repo.FilterAsync(It.IsAny<ProductFilter>()))
+            .ReturnsAsync(new List<ProductEntity>());
+        
+        _productRepositoryMock.Setup(repo => repo.CountAsync(It.IsAny<ProductFilter>()))
+            .ReturnsAsync(0);
+
+        var result = await _productService.FilterAsync(dto);
+
+        Assert.Empty(result.Data);
+        Assert.Equal(0, result.Pagination.TotalItems);
 
     }
 
 
-    private ProductCreateDto CreateProductDto()
+    private ProductCreateDto CreateProductDto(string name, string type)
     {
         var productType = new ProductType();
         
@@ -71,8 +164,8 @@ public class ProductServiceTests
         {
             ConservationDays = "1 dia",
             LargeDescription = "LargeDescription",
-            Name = "produto",
-            ProductType = "Pendente",
+            Name = name,
+            ProductType = type,
             ShortDescription = "ShortDescription",
             UnitPrice = 2,
             Weight = "1"
@@ -83,11 +176,10 @@ public class ProductServiceTests
     
     private ProductEntity CreateProductEntity(Guid sellerId)
     {
-        var productType = new ProductType();
         
         var productMock = new ProductEntity(
-            "Produto",
-            productType,
+            "Produto", 
+            ProductType.Verduras,
             1,
             sellerId,
             "1 dia na geladeira",
