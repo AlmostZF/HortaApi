@@ -47,7 +47,7 @@ public class OrderReservationEntity
         ReservationDate = DateTime.UtcNow;
         PickupLocation = location;
         PickupLocationId = location.Id;
-        ReservationFee = fee;
+        ReservationFee = 0;
         SellerId = sellerId;
         
         

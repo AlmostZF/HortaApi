@@ -105,7 +105,7 @@ public class DashboardRepository:IDashboardQueries
                 ReservationDate = r.ReservationDate,
                 PickUpDate = r.PickupDate,
                 ReservationId = r.Id,
-                TotalValue = r.TotalValue,
+                TotalValue = r.ListOrderItems.Sum(s=>s.UnitPrice * s.Quantity),
             });
 
         return reservation;
