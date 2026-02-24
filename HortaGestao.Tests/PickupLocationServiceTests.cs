@@ -3,6 +3,7 @@ using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Services;
 using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.IRepositories;
+using HortaGestao.Domain.ValueObjects;
 using Moq;
 
 namespace HortaGestao.Tests;
@@ -57,7 +58,6 @@ public class PickupLocationServiceTests
 
         var resultId = await _pickupLocationService.CreateAsync(dto);
         
-        
         _pickupLocationRepository.Verify(repo => repo.CreateAsync(
             It.Is<PickupLocationEntity>(e => 
                 e.Address.City == dto.City && 
@@ -73,9 +73,50 @@ public class PickupLocationServiceTests
 
     }
 
+    [Fact]
+    public async Task TestGetPickupLocationById()
+    {
+
+        var sellerId = Guid.NewGuid();
+        var seller = CreateSeller();
+        SetProperty(seller, "Id", sellerId);
+
+        var pickUpLocation = MockPicupLocation(sellerId);
+        var otherPickUpLocation = MockPicupLocation(sellerId, "Other");
+
+        _pickupLocationRepository
+            .Setup(repo =>
+                repo.GetBySellerIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new List<PickupLocationEntity> { pickUpLocation, otherPickUpLocation });
+
+
+        var result = await _pickupLocationService.GetBySellerIdAsync(sellerId);
+
+        Assert.NotNull(result);
+        Assert.Contains("street", result[0].Street);
+        Assert.Contains("Other", result[1].CustomName);
+
+        _pickupLocationRepository.Verify(repo => repo.GetBySellerIdAsync(
+            It.IsAny<Guid>()), Times.Once);
+    }
+
     private SellerEntity CreateSeller()
     {
         return new SellerEntity("Guilherme", "111");
+    }
+    
+    private PickupLocationEntity MockPicupLocation(Guid sellerId, string? customName = "customName")
+    {
+        var addresMock = new Address("street", "number", "city", "zipCode", "state",
+            "neighborhood", customName);
+        var pickupDays = new List<PickupDay>
+        {
+            new PickupDay(DayOfWeek.Monday),
+            new PickupDay(DayOfWeek.Tuesday),
+        };
+        
+        var mockPickupLocation = new PickupLocationEntity(addresMock, pickupDays, sellerId);
+        return mockPickupLocation;
     }
 
     private PickupLocationCreateDto createDto(Guid sellerId)
