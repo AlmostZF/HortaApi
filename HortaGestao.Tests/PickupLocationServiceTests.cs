@@ -43,7 +43,7 @@ public class PickupLocationServiceTests
     {
         var sellerId = Guid.NewGuid();
 
-        var dto = createDto(sellerId);
+        var dto = CreateDto(sellerId);
         
         var seller = CreateSeller();
         SetProperty(seller, "Id", sellerId);
@@ -175,7 +175,6 @@ public class PickupLocationServiceTests
     public async Task TestUpdateExistingPickupLocation_And_DeletePickupLocation()
     {
         var sellerId = Guid.NewGuid();
-        var pickupLocationId = Guid.NewGuid();
         var seller = CreateSeller();
         SetProperty(seller, "Id", sellerId);
         
@@ -207,6 +206,83 @@ public class PickupLocationServiceTests
         _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Once);
     }
     
+    [Fact]
+    public async Task TestUpdatePickupLocation_ShouldRollback_When_UpdateFails()
+    {
+        var sellerId = Guid.NewGuid();
+        var pickupLocation = MockPicupLocation(sellerId);
+        
+        var listDto = new List<PickupLocationUpdateDto>
+        {
+            UpdateDto(pickupLocation.Id)
+        };
+        
+        _pickupLocationRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
+            .ReturnsAsync(new List<PickupLocationEntity> { pickupLocation });
+
+        _pickupLocationRepository.Setup(repo => repo
+            .UpdateAsync(It.IsAny<PickupLocationEntity>())).ThrowsAsync(new Exception("Erro de banco de dados"));
+
+        var exception =
+            await Assert.ThrowsAsync<Exception>(() => _pickupLocationService.UpdateAsync(listDto, sellerId));
+        
+        Assert.Equal("Erro de banco de dados", exception.Message);
+        
+        _unitOfWork.Verify(uow => uow.RollbackAsync(), Times.Once);
+
+        _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Never);
+    }
+    
+    [Fact]
+    public async Task TestUpdatePickupLocation_ShouldRollback_When_CreateFails()
+    {
+        var sellerId = Guid.NewGuid();
+        
+        var listDto = new List<PickupLocationUpdateDto>
+        {
+            UpdateDto(Guid.NewGuid())
+        };
+        
+        _pickupLocationRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
+            .ReturnsAsync(new List<PickupLocationEntity>());
+
+        _pickupLocationRepository.Setup(repo => repo
+            .CreateAsync(It.IsAny<PickupLocationEntity>())).ThrowsAsync(new Exception("Erro ao criar"));
+
+        var exception =
+            await Assert.ThrowsAsync<Exception>(() => _pickupLocationService.UpdateAsync(listDto, sellerId));
+        
+        Assert.Equal("Erro ao criar", exception.Message);
+        
+        _unitOfWork.Verify(uow => uow.RollbackAsync(), Times.Once);
+
+        _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Never);
+    }
+    
+    [Fact]
+    public async Task TestUpdatePickupLocation_ShouldRollback_When_DeleteFails()
+    {
+        var sellerId = Guid.NewGuid();
+        var pickupLocation = MockPicupLocation(sellerId);
+        
+        var listaVaziaDto = new List<PickupLocationUpdateDto>();
+        
+        _pickupLocationRepository.Setup(repo => repo.GetBySellerIdAsync(sellerId))
+            .ReturnsAsync(new List<PickupLocationEntity> { pickupLocation });
+
+        _pickupLocationRepository.Setup(repo => repo
+            .DeleteAsync(pickupLocation.Id)).ThrowsAsync(new Exception("Erro Deletar"));
+
+        var exception =
+            await Assert.ThrowsAsync<Exception>(() => _pickupLocationService.UpdateAsync(listaVaziaDto, sellerId));
+        
+        Assert.Equal("Erro Deletar", exception.Message);
+        
+        _unitOfWork.Verify(uow => uow.RollbackAsync(), Times.Once);
+
+        _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Never);
+    }
+
     private SellerEntity CreateSeller()
     {
         return new SellerEntity("Guilherme", "111");
@@ -243,7 +319,7 @@ public class PickupLocationServiceTests
         
     }
 
-    private PickupLocationCreateDto createDto(Guid sellerId)
+    private PickupLocationCreateDto CreateDto(Guid sellerId)
     {
         return new PickupLocationCreateDto
         {

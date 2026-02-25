@@ -57,8 +57,10 @@ public class StockServiceTests
         var productId = Guid.NewGuid();
         var stockId = Guid.NewGuid();
         
+        var productMock = CreateProductEntity(sellerId);
+        
         var stockMock = new StockEntity(productId, 0, 0);
-        SetProperty(stockMock, "Product", stockMock);
+        SetProperty(stockMock, "Product", productMock);
 
         var dto = new StockUpdateDto()
         {
