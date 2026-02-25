@@ -100,6 +100,113 @@ public class PickupLocationServiceTests
             It.IsAny<Guid>()), Times.Once);
     }
 
+    [Fact]
+    public async Task TestUpdatePickupLocation()
+    {
+        var sellerId = Guid.NewGuid();
+        var seller = CreateSeller();
+        SetProperty(seller, "Id", sellerId);
+        
+        var pickUpLocation = MockPicupLocation(sellerId);
+        var otherPickUpLocation = MockPicupLocation(sellerId, "Other");
+
+        var listDto = new List<PickupLocationUpdateDto>
+        {
+            UpdateDto(pickUpLocation.Id), UpdateDto(otherPickUpLocation.Id, "city2")
+        };
+        
+        _pickupLocationRepository.Setup(repo=> repo
+                .GetBySellerIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new List<PickupLocationEntity> { pickUpLocation, otherPickUpLocation });
+
+        await _pickupLocationService.UpdateAsync(listDto, sellerId);
+
+        _pickupLocationRepository.Verify(repo => repo
+            .UpdateAsync(It.Is<PickupLocationEntity>(p => 
+                p.Address.City == listDto[0].City)), Times.Once);
+        
+        _pickupLocationRepository.Verify(repo => repo
+            .UpdateAsync(It.Is<PickupLocationEntity>(p => 
+                p.Address.City == listDto[1].City)), Times.Once);
+        
+        _unitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Once);
+        _unitOfWork.Verify(uow => uow.RollbackAsync(), Times.Never);
+    }
+    
+    [Fact]
+    public async Task TestUpdateExistingPickupLocation_And_CreateNewPickupLocation()
+    {
+        var sellerId = Guid.NewGuid();
+        var pickupLocationId = Guid.NewGuid();
+        var seller = CreateSeller();
+        SetProperty(seller, "Id", sellerId);
+        
+        var pickUpLocation = MockPicupLocation(sellerId);
+        var otherPickUpLocation = MockPicupLocation(sellerId, "Other");
+
+        var listDto = new List<PickupLocationUpdateDto>
+        {
+            UpdateDto(pickUpLocation.Id), UpdateDto(pickupLocationId, "city2")
+        };
+
+        
+        _pickupLocationRepository.Setup(repo=> repo
+                .GetBySellerIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new List<PickupLocationEntity> { pickUpLocation, otherPickUpLocation });
+
+        await _pickupLocationService.UpdateAsync(listDto, sellerId);
+
+        _pickupLocationRepository.Verify(repo => repo
+            .UpdateAsync(It.Is<PickupLocationEntity>(p => 
+                p.Address.City == listDto[0].City )), Times.Once);
+
+        _pickupLocationRepository.Verify(repo => repo
+            .CreateAsync(It.Is<PickupLocationEntity>(p =>
+                p.Address.City == listDto[1].City)), Times.Once);
+
+        _unitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(uow => uow.RollbackAsync(), Times.Never);
+        _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Once);
+    }
+    
+    
+    [Fact]
+    public async Task TestUpdateExistingPickupLocation_And_DeletePickupLocation()
+    {
+        var sellerId = Guid.NewGuid();
+        var pickupLocationId = Guid.NewGuid();
+        var seller = CreateSeller();
+        SetProperty(seller, "Id", sellerId);
+        
+        var pickUpLocation = MockPicupLocation(sellerId);
+        var otherPickUpLocation = MockPicupLocation(sellerId, "Other");
+
+        var listDto = new List<PickupLocationUpdateDto>
+        {
+            UpdateDto(pickUpLocation.Id)
+        };
+
+        
+        _pickupLocationRepository.Setup(repo=> repo
+                .GetBySellerIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new List<PickupLocationEntity> { pickUpLocation, otherPickUpLocation });
+
+        await _pickupLocationService.UpdateAsync(listDto, sellerId);
+
+        _pickupLocationRepository.Verify(repo => repo
+            .UpdateAsync(It.Is<PickupLocationEntity>(p => 
+                p.Address.City == listDto[0].City )), Times.Once);
+
+        _pickupLocationRepository.Verify(repo => repo
+            .DeleteAsync(It.Is<Guid>(p =>
+                p == otherPickUpLocation.Id)), Times.Once);
+        
+        _unitOfWork.Verify(uow => uow.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(uow => uow.RollbackAsync(), Times.Never);
+        _unitOfWork.Verify(uow => uow.CommitAsync(), Times.Once);
+    }
+    
     private SellerEntity CreateSeller()
     {
         return new SellerEntity("Guilherme", "111");
@@ -117,6 +224,23 @@ public class PickupLocationServiceTests
         
         var mockPickupLocation = new PickupLocationEntity(addresMock, pickupDays, sellerId);
         return mockPickupLocation;
+    }
+
+    private PickupLocationUpdateDto UpdateDto(Guid id, string? city = "city")
+    {
+        return new PickupLocationUpdateDto
+        {
+            City = city,
+            CustomName = "Custom Name",
+            Neighborhood = "Neighborhood",
+            Number = "1",
+            PickupDays = new List<DayOfWeek> { DayOfWeek.Friday, DayOfWeek.Monday },
+            State = "State",
+            Street = "Street",
+            ZipCode = "ZipCode",
+            Id = id
+        };
+        
     }
 
     private PickupLocationCreateDto createDto(Guid sellerId)
