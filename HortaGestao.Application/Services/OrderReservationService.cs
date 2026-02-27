@@ -56,13 +56,13 @@ public class OrderReservationService : IOrderReservationService
         return OrderReservationMapper.ToDto(orderReservation);
     }
 
-    public async Task FinishOrderAsync(Guid guid, Guid sellerId)
+    public async Task FinishOrderAsync(Guid id, Guid sellerId)
     {
-        var orderReservation = await _orderReservationRepository.GetByIdAsync(guid, sellerId);
+        var orderReservation = await _orderReservationRepository.GetByIdAsync(id, sellerId);
         if (orderReservation == null)
             throw new InvalidOperationException("Reserva não encontrada.");
         
-        await _orderReservationRepository.UpdateStatusAsync("Confirmada",guid);
+        await _orderReservationRepository.UpdateStatusAsync("Confirmada",id);
     }
     
     public async Task CancelOrderAsync(string securityCode, Guid sellerId)
