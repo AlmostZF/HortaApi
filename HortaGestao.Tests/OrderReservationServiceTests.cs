@@ -342,10 +342,133 @@ public class OrderReservationServiceTests
         Assert.NotNull(result);
         Assert.Equal("ABC1", result.UserResponse.SecurityCode);
     }
-    
 
+    [Fact]
+    public async Task TestUpdateOrder()
+    {
+        var sellerId = Guid.NewGuid();
+        var seller = new SellerEntity("Guilherme", "123");
+        SetProperty(seller, "Id", sellerId);
+        
+        var orderId = Guid.NewGuid();
+        var pickupLocation = MockPicupLocation(sellerId);
+        var order = MockOrderReservation(pickupLocation, sellerId);
+        SetProperty(order, "Id", null);
+        
+        
+        var listProduct = new List<ProductEntity>
+        {
+            CreateProductEntity(sellerId), CreateProductEntity(sellerId)
+        };
+        
+        var listOrder = new List<OrderReservationItemDto>
+        {
+            OrderReservationItemDto(sellerId, listProduct[0].Id),
+            OrderReservationItemDto(sellerId, listProduct[1].Id),
+        };
+        
+        var dto = UpdateDto(sellerId, listOrder, orderId);
+        
+        var listStockMocs = new List<StockEntity>
+        {
+            new StockEntity(listProduct[0].Id, 1, listProduct[0].UnitPrice),
+            new StockEntity(listProduct[1].Id, 1, listProduct[1].UnitPrice)
+        };
+        
+        _orderReservationRepository.Setup(repo => repo
+            .GetBySellerIdAsync(It.IsAny<Guid>())).ReturnsAsync(order);
 
+        _productRepository.Setup(repo => repo
+            .GetManyProducts(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listProduct);
+
+        _stockRepository.Setup(repo => repo
+            .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocs);
+
+        await _orderReservationService.UpdateAsync(dto);
+
+        _stockRepository.Verify(repo => repo
+            .UpdateRangeAsync(
+                It.Is<IEnumerable<StockEntity>>(s => s
+                    .First().ProductId == listStockMocs[0].ProductId)), Times.Once);
+
+        _orderReservationRepository.Verify(repo => repo
+            .UpdateAsync(It.Is<OrderReservationEntity>(o => 
+                o.TotalValue == 20 &&
+                o.SellerId == sellerId)), Times.Once);
+        
+        _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.CommitAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.RollbackAsync(), Times.Never);
+    }
     
+        [Fact]
+    public async Task TestUpdateOrder_ShouldRollBack_WhenHasNoOrder()
+    {
+        var dto = new OrderReservationUpdateDto { Id = Guid.NewGuid() };
+        
+        _orderReservationRepository.Setup(repo => repo
+            .GetBySellerIdAsync(It.IsAny<Guid>()))!.ReturnsAsync((OrderReservationEntity)null);
+        
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _orderReservationService.UpdateAsync(dto));
+        
+        Assert.Equal("Reserva não encontrada.", exception.Message);
+        
+        _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.CommitAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.RollbackAsync(), Times.Once);
+    }
+    
+    [Fact]
+    public async Task TestAddOrder()
+    {
+    }
+
+    private OrderReservationUpdateDto UpdateDto(Guid sellerId, List<OrderReservationItemDto> listOrder, Guid orderId)
+    {
+        return new OrderReservationUpdateDto
+        {
+            listOrderItens = listOrder,
+            OrderStatus = "Pendente",
+            PickupDate = new DateTime(),
+            PickupDeadline = new DateTime(),
+            PickupLocation = UpdatePickupLocationDto(sellerId),
+            ReservationDate = new DateTime(),
+            ReservationFee = 2,
+            SecurityCode = "ABC1",
+            Id = orderId,
+            ValueTotal = 1
+            
+        };
+    }
+
+    private OrderReservationItemDto OrderReservationItemDto(Guid sellerId, Guid productId)
+    {
+        return new OrderReservationItemDto
+        {
+            ProductId = productId,
+            Quantity = 1,
+            SellerId = sellerId,
+        };
+    }
+
+    private PickupLocationUpdateDto UpdatePickupLocationDto(Guid id, string? city = "city")
+    {
+        return new PickupLocationUpdateDto
+        {
+            City = city,
+            CustomName = "Custom Name",
+            Neighborhood = "Neighborhood",
+            Number = "1",
+            PickupDays = new List<DayOfWeek> { DayOfWeek.Friday, DayOfWeek.Monday },
+            State = "State",
+            Street = "Street",
+            ZipCode = "ZipCode",
+            Id = id
+        };
+        
+    }
+
     private OrderReservationEntity MockOrderReservation(PickupLocationEntity location, Guid sellerId)
     {
         var pickupDate = new DateTime();
