@@ -261,6 +261,91 @@ public class OrderReservationServiceTests
     }
     
     
+    [Fact]
+    public async Task TestGetStatus()
+    {
+        var sellerId = Guid.NewGuid();
+        var status = StatusOrder.Pendente;
+        var pickupLocation = MockPicupLocation(sellerId);
+        var orderId = Guid.NewGuid();
+        var order = MockOrderReservation(pickupLocation, sellerId);
+        SetProperty(order, "Id", orderId);
+
+        _orderReservationRepository.Setup(repo => repo
+            .GetByStatusAsync(It.IsAny<StatusOrder>())).ReturnsAsync(new List<OrderReservationEntity> { order });
+        
+        var result = await _orderReservationService.GetByStatusAsync(status);
+
+        Assert.NotEmpty(result);
+        Assert.Equal("Pendente", result[0].OrderStatus);
+
+    }
+    
+    [Fact]
+    public async Task TestGetStatus_ShouldRetunsEmpty_WhenNoOrdersMatchStatus()
+    {
+        var status = StatusOrder.Cancelada;
+
+        _orderReservationRepository.Setup(repo => repo
+            .GetByStatusAsync(It.IsAny<StatusOrder>())).ReturnsAsync(new List<OrderReservationEntity> ());
+        
+        var result = await _orderReservationService.GetByStatusAsync(status);
+        
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+    
+    [Fact]
+    public async Task TestGetBySecurityCode_ShouldRetunsEmpty_WhenNoSecurityCodeMatchStatus()
+    {
+        var securityCode = new SecurityCode("ABC1");
+        var sellerId = Guid.NewGuid();
+        var status = StatusOrder.Cancelada;
+        var pickupLocation = MockPicupLocation(sellerId);
+        var orderId = Guid.NewGuid();
+        var order = MockOrderReservation(pickupLocation, sellerId);
+        SetProperty(order, "Id", orderId);
+        SetProperty(order, "SecurityCode", securityCode);
+
+        _orderReservationRepository.Setup(repo => repo
+            .GetBySecurityCodeAsync(
+                It.IsAny<string>(),
+                It.IsAny<Guid>())).ReturnsAsync(order);
+        
+        var result = await _orderReservationService.GetBySecurityCodeAsync(
+            securityCode.Value, sellerId);
+        
+        Assert.NotNull(result);
+        Assert.NotEqual("ABC2", result.UserResponse.SecurityCode);
+    }
+    
+    [Fact]
+    public async Task TestGetBySecurityCode()
+    {
+        var securityCode = new SecurityCode("ABC1");
+        var sellerId = Guid.NewGuid();
+        var status = StatusOrder.Cancelada;
+        var pickupLocation = MockPicupLocation(sellerId);
+        var orderId = Guid.NewGuid();
+        var order = MockOrderReservation(pickupLocation, sellerId);
+        SetProperty(order, "Id", orderId);
+        SetProperty(order, "SecurityCode", securityCode);
+
+        _orderReservationRepository.Setup(repo => repo
+            .GetBySecurityCodeAsync(
+                It.IsAny<string>(),
+                It.IsAny<Guid>())).ReturnsAsync(order);
+        
+        var result = await _orderReservationService.GetBySecurityCodeAsync(
+            securityCode.Value, sellerId);
+        
+        Assert.NotNull(result);
+        Assert.Equal("ABC1", result.UserResponse.SecurityCode);
+    }
+    
+
+
+    
     private OrderReservationEntity MockOrderReservation(PickupLocationEntity location, Guid sellerId)
     {
         var pickupDate = new DateTime();

@@ -45,7 +45,6 @@ public class OrderReservationService : IOrderReservationService
         if (listOrder == null)
             return null;
         
-
         return OrderReservationMapper.ToDto(listOrder);
     }
 
@@ -274,7 +273,7 @@ public class OrderReservationService : IOrderReservationService
         return OrderReservationMapper.ToCalculatedOrderDTO(items, productsEntities, stockDictionary);
     }
 
-    public List<OrderReservationItemDto> ValidateStock(List<OrderReservationItemDto> listOrderItens,
+    private List<OrderReservationItemDto> ValidateStock(List<OrderReservationItemDto> listOrderItens,
         Dictionary<Guid,int> stockDictionary)
     {
         var validatedItems = new List<OrderReservationItemDto>();
