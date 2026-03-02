@@ -53,7 +53,6 @@ public class OrderReservationServiceTests
     {
         var sellerId = Guid.NewGuid();
         var dto = CreateOrderCalculateDto();
-        var seller = new SellerEntity("Guilherme", "11111");
         
         var listProduct = new List<ProductEntity>
         {
@@ -63,10 +62,6 @@ public class OrderReservationServiceTests
         dto.listOrderItens.Add(CreateOrderReservationItem(sellerId, listProduct[0].Id));
         dto.listOrderItens.Add(CreateOrderReservationItem(sellerId, listProduct[1].Id));
         
-        foreach (var product in listProduct)
-        {
-            SetProperty(product, "Seller", seller);
-        }
         
         var listStockMocs = new List<StockEntity>
         {
@@ -94,7 +89,6 @@ public class OrderReservationServiceTests
     {
         var sellerId = Guid.NewGuid();
         var dto = CreateOrderCalculateDto();
-        var seller = new SellerEntity("Guilherme", "11111");
         
         var listProduct = new List<ProductEntity>
         {
@@ -103,11 +97,6 @@ public class OrderReservationServiceTests
         
         dto.listOrderItens.Add(CreateOrderReservationItem(sellerId, listProduct[0].Id));
         dto.listOrderItens.Add(CreateOrderReservationItem(sellerId, listProduct[1].Id));
-        
-        foreach (var product in listProduct)
-        {
-            SetProperty(product, "Seller", seller);
-        }
         
         var listStockMocs = new List<StockEntity>
         {
@@ -136,7 +125,6 @@ public class OrderReservationServiceTests
     {
         var sellerId = Guid.NewGuid();
         var dto = CreateOrderCalculateDto();
-        var seller = new SellerEntity("Guilherme", "11111");
         
         var listProduct = new List<ProductEntity>
         {
@@ -145,11 +133,6 @@ public class OrderReservationServiceTests
         
         dto.listOrderItens.Add(CreateOrderReservationItem(sellerId, listProduct[0].Id));
         dto.listOrderItens.Add(CreateOrderReservationItem(sellerId, listProduct[1].Id));
-        
-        foreach (var product in listProduct)
-        {
-            SetProperty(product, "Seller", seller);
-        }
         
         var listStockMocs = new List<StockEntity>
         {
@@ -184,10 +167,7 @@ public class OrderReservationServiceTests
         string securityCode = "ABC1";
         var sellerId = Guid.NewGuid();
         var pickupLocation = MockPicupLocation(sellerId);
-        
-        var orderId = Guid.NewGuid();
         var order = MockOrderReservation(pickupLocation, sellerId);
-        SetProperty(order, "Id", orderId);
         
         var listProduct = new List<ProductEntity>
         {
@@ -347,8 +327,6 @@ public class OrderReservationServiceTests
     public async Task TestUpdateOrder()
     {
         var sellerId = Guid.NewGuid();
-        var seller = new SellerEntity("Guilherme", "123");
-        SetProperty(seller, "Id", sellerId);
         
         var orderId = Guid.NewGuid();
         var pickupLocation = MockPicupLocation(sellerId);
@@ -422,8 +400,140 @@ public class OrderReservationServiceTests
     [Fact]
     public async Task TestAddOrder()
     {
+        var sellerId = Guid.NewGuid();
+        
+        var pickupLocation = MockPicupLocation(sellerId);
+        var CreatePicupLocation = CreatePickupLocationDto(sellerId);
+        
+        var listProduct = new List<ProductEntity>
+        {
+            CreateProductEntity(sellerId), CreateProductEntity(sellerId)
+        };
+        
+        var listStockMocs = new List<StockEntity>
+        {
+            new StockEntity(listProduct[0].Id, 10, listProduct[0].UnitPrice),
+            new StockEntity(listProduct[1].Id, 1, listProduct[1].UnitPrice)
+        };
+        var orderReservationItem = CreateOrderReservationItem(sellerId, listProduct[0].Id);
+        
+        var dto = CreateOrderReservationDto(sellerId, CreatePicupLocation, orderReservationItem);
+        
+        _productRepository.Setup(repo => repo
+            .GetManyProducts(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listProduct);
+
+        _stockRepository.Setup(repo => repo
+            .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocs);
+
+        _pickupLocationRepository.Setup(repo => repo
+            .GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(pickupLocation);
+        
+        
+        var result = await _orderReservationService.AddAsync(dto);
+        
+        var response = result.FirstOrDefault();
+        Assert.NotNull(result);
+        Assert.NotNull(response.SecurityCode);
+        Assert.Equal("Guilherme", response.SellerName);
+        
+        _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.CommitAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.RollbackAsync(), Times.Never);
+    }
+    
+    [Fact]
+    public async Task TestAddOrder_ShouldRollaback_StockFail()
+    {
+        var sellerId = Guid.NewGuid();
+        var CreatePicupLocation = CreatePickupLocationDto(sellerId);
+        
+        var listProduct = new List<ProductEntity>
+        {
+            CreateProductEntity(sellerId), CreateProductEntity(sellerId)
+        };
+        
+        var listStockMocs = new List<StockEntity>
+        {
+            new StockEntity(listProduct[0].Id, 1, listProduct[0].UnitPrice),
+            new StockEntity(listProduct[1].Id, 1, listProduct[1].UnitPrice)
+        };
+        
+        var orderReservationItem = CreateOrderReservationItem(sellerId, listProduct[0].Id);
+        
+        var dto = CreateOrderReservationDto(sellerId, CreatePicupLocation, orderReservationItem);
+        
+
+        _stockRepository.Setup(repo => repo
+            .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocs);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => 
+            _orderReservationService.AddAsync(dto));
+        
+        Assert.Equal("estoque insuficiente", exception.Message);
+        
+        _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.CommitAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.RollbackAsync(), Times.Once);
+    }
+    
+    [Fact]
+    public async Task TestAddOrder_ShouldRollaback_NoPickupLocation()
+    {
+        var sellerId = Guid.NewGuid();
+        var CreatePicupLocation = CreatePickupLocationDto(sellerId);
+        
+        var listProduct = new List<ProductEntity>
+        {
+            CreateProductEntity(sellerId), CreateProductEntity(sellerId)
+        };
+        
+        var listStockMocs = new List<StockEntity>
+        {
+            new StockEntity(listProduct[0].Id, 10, listProduct[0].UnitPrice),
+            new StockEntity(listProduct[1].Id, 1, listProduct[1].UnitPrice)
+        };
+        
+        var orderReservationItem = CreateOrderReservationItem(sellerId, listProduct[0].Id);
+        
+        var dto = CreateOrderReservationDto(sellerId, CreatePicupLocation, orderReservationItem);
+        
+
+        _stockRepository.Setup(repo => repo
+            .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocs);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => 
+            _orderReservationService.AddAsync(dto));
+        
+        Assert.Equal("Ponto de retirada não encontrado", exception.Message);
+        
+        
+        _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
+        _unitOfWork.Verify(work => work.CommitAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.RollbackAsync(), Times.Once);
     }
 
+    private OrderReservationCreateDto CreateOrderReservationDto(
+        Guid sellerId, 
+        PickupLocationCreateDto pickup, 
+        OrderReservationItemDto item)
+    { 
+        var order = new OrderReservationCreateDto
+        {
+            Email = "teste@teste.com",
+            FullName = "Guilherme",
+            OrderDetails = new List<OrderReservationDetailsDto>
+            {
+                new OrderReservationDetailsDto
+                {
+                    SellerId = sellerId,
+                    PickupLocation = pickup,
+                    listOrderItens = new List<OrderReservationItemDto> { item }
+                }
+            }
+        };
+        return order;
+    }
+    
     private OrderReservationUpdateDto UpdateDto(Guid sellerId, List<OrderReservationItemDto> listOrder, Guid orderId)
     {
         return new OrderReservationUpdateDto
@@ -469,11 +579,34 @@ public class OrderReservationServiceTests
         
     }
 
+    private PickupLocationCreateDto CreatePickupLocationDto(Guid sellerId, string? city = "city")
+    {
+        var seller = new SellerEntity("Guilherme", "1111");
+        SetProperty(seller, "Id", sellerId);
+        var mockPickupLocation= new PickupLocationCreateDto
+        {
+            City = city,
+            CustomName = "Custom Name",
+            Neighborhood = "Neighborhood",
+            Number = "1",
+            PickupDays = new List<DayOfWeek> { DayOfWeek.Friday, DayOfWeek.Monday },
+            State = "State",
+            Street = "Street",
+            ZipCode = "ZipCode",
+            SellerId = sellerId,
+            Id = Guid.NewGuid()
+        };
+        SetProperty(mockPickupLocation, "Seller", seller);
+
+        return mockPickupLocation;
+    }
+
     private OrderReservationEntity MockOrderReservation(PickupLocationEntity location, Guid sellerId)
     {
+        var orderId = Guid.NewGuid();
         var pickupDate = new DateTime();
         var deadline = new DateTime();
-        return OrderReservationEntity.CreateForGuest(
+        var order = OrderReservationEntity.CreateForGuest(
             "Guilherme",
             "Guilherme@teste.com", "111",
             location,
@@ -481,11 +614,16 @@ public class OrderReservationServiceTests
             deadline,
             0,
             sellerId);
+        
+        SetProperty(order, "Id", orderId);
+        return order;
     }
 
     
     private PickupLocationEntity MockPicupLocation(Guid sellerId, string? customName = "customName")
     {
+        var seller = new SellerEntity("Guilherme", "1111");
+        SetProperty(seller, "Id", sellerId);
         var addresMock = new Address("street", "number", "city", "zipCode", "state",
             "neighborhood", customName);
         var pickupDays = new List<PickupDay>
@@ -495,6 +633,7 @@ public class OrderReservationServiceTests
         };
         
         var mockPickupLocation = new PickupLocationEntity(addresMock, pickupDays, sellerId);
+        SetProperty(mockPickupLocation, "Seller", seller);
         return mockPickupLocation;
     }
 
@@ -513,7 +652,6 @@ public class OrderReservationServiceTests
             listOrderItens = new List<OrderReservationItemDto>()
         };
     }
-
     private OrderReservationItemDto CreateOrderReservationItem(Guid sellerId, Guid productId)
     {
         return new OrderReservationItemDto
@@ -526,7 +664,8 @@ public class OrderReservationServiceTests
 
     private ProductEntity CreateProductEntity(Guid sellerId, decimal? UnitPrice = 10)
     {
-        
+        var seller = new SellerEntity("Guilherme", "11111");
+        SetProperty(seller, "Id", sellerId);
         var productMock = new ProductEntity(
             "Produto", 
             ProductType.Verduras,
@@ -537,7 +676,8 @@ public class OrderReservationServiceTests
             "shortDescription",
             "largeDescription",
             "1kg");
-
+        
+        SetProperty(productMock, "Seller", seller);
         return productMock;
     }
     
