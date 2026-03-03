@@ -16,6 +16,7 @@ public class OrderReservationService : IOrderReservationService
     private readonly IOrderReservationRepository _orderReservationRepository;
     private readonly IProductRepository _productRepository;
     private readonly IPickupLocationRespository _pickupLocationRepository;
+    private readonly IStockService _stockService;
     private readonly IReservationFeeCalculate _calculate;
     private readonly IStockRepository _stockRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -26,6 +27,7 @@ public class OrderReservationService : IOrderReservationService
         IProductRepository productRepository,
         IPickupLocationRespository pickupLocationRepository,
         IStockRepository stockRepository,
+        IStockService stockService,
         IUnitOfWork unitOfWork
     )
     {
@@ -35,6 +37,7 @@ public class OrderReservationService : IOrderReservationService
         _pickupLocationRepository = pickupLocationRepository;
         _stockRepository = stockRepository;
         _unitOfWork = unitOfWork;
+        _stockService = stockService;
     }
 
     public async Task<OrderReservationResponseDto?> GetBySecurityCodeAsync(string securityCode,Guid sellerId)
@@ -166,60 +169,41 @@ public class OrderReservationService : IOrderReservationService
     public async Task<List<CreateOrderReservationResponseDto>> AddAsync(OrderReservationCreateDto orderReservationCreateDto)
     {
         await _unitOfWork.BeginTransactionAsync();
+        
+        var productsIds = orderReservationCreateDto.OrderDetails
+            .SelectMany(o => o.listOrderItens
+                .Select(l=> l.ProductId)).Distinct();
+        var productsEntities = await _productRepository.GetManyProducts(productsIds);
+        var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
+        
         try
         {   
             var responses = new List<CreateOrderReservationResponseDto>();
             foreach (var orderDetail in orderReservationCreateDto.OrderDetails)
             {
-                var productsIds = orderDetail.listOrderItens
-                    .Select(x => x.ProductId).Distinct();
-                
-                var productsEntities = await _productRepository.GetManyProducts(productsIds);
-                var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
-
-                foreach (var item in stockEntities)
-                {
-                    var orderItem = orderDetail.listOrderItens.
-                        FirstOrDefault(x => x.ProductId == item.ProductId);
-                    if (orderItem != null)
-                    {
-                        if (item.Quantity < orderItem.Quantity)
-                            throw new Exception("estoque insuficiente");
-
-                        item.RemoveQuantity(orderItem.Quantity);
-                    }
-                    
-                    await _stockRepository.UpdateQuantityAsync(item);
-                    
-                }
-
+                await _stockService.DebitStockAsync(orderDetail.listOrderItens, stockEntities);
                 
                 var items = await CalculateOrderItemsAsync(productsEntities,
                     orderDetail.listOrderItens);
-            
+        
                 var totalValue = items.Sum(i => i.UnitPrice * i.Quantity);
                 var fee = _calculate.CalculateFeeCalculate(totalValue);
-                
+            
                 var pickupLocation = await _pickupLocationRepository.GetByIdAsync(
-                    orderDetail.PickupLocation.Id.Value, orderDetail.SellerId);
-
-                if (pickupLocation == null) throw new Exception("Ponto de retirada não encontrado");
-                 
-                var orderReservationEntity = OrderReservationMapper.ToCreateEntity(
-                    orderReservationCreateDto, orderDetail, pickupLocation, totalValue, orderDetail.SellerId);
-            
-                foreach (var item in items)
-                {
-                    orderReservationEntity.AddItem(item.ProductId, item.SellerId, item.Quantity, item.UnitPrice);
-                }
-            
+                    orderDetail.PickupLocation.Id.Value, orderDetail.SellerId
+                    ) ?? throw new Exception("Ponto de retirada não encontrado");
+                
+             
+                var orderReservationEntity = await CreateOrderAsync(orderReservationCreateDto,
+                    orderDetail, pickupLocation, fee, items);
+                
                 await _orderReservationRepository.AddAsync(orderReservationEntity);
                 responses.Add(new CreateOrderReservationResponseDto 
                 { 
-                    SellerName = orderReservationEntity.Seller.Name,
-                    SecurityCode = orderReservationEntity.SecurityCode.Value 
+                    SellerName = orderReservationEntity.Seller?.Name ?? "",
+                    SecurityCode = orderReservationEntity.SecurityCode?.Value 
                 });
-            }   
+            }
             
             await _unitOfWork.CommitAsync();
             return responses;
@@ -231,6 +215,23 @@ public class OrderReservationService : IOrderReservationService
             throw;
         }
         
+    }
+
+    private async Task<OrderReservationEntity> CreateOrderAsync(OrderReservationCreateDto orderReservationCreateDto,
+        OrderReservationDetailsDto orderDetail,
+        PickupLocationEntity pickupLocation,
+        decimal reservationFee, ICollection<OrderReservationItemEntity> items)
+    {
+        var orderReservationEntity = OrderReservationMapper.ToCreateEntity(
+            orderReservationCreateDto, orderDetail, pickupLocation, reservationFee, orderDetail.SellerId);
+
+        foreach (var item in items)
+        {
+            orderReservationEntity.AddItem(item.ProductId, item.SellerId, item.Quantity, item.UnitPrice);
+        }
+
+        return orderReservationEntity;
+
     }
 
     public async Task<List<OrderReservationResponseDto>> GetByStatusAsync(StatusOrder status)

@@ -1,5 +1,6 @@
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
+using HortaGestao.Domain.Entities;
 
 namespace HortaGestao.Application.Interfaces.Services;
 
@@ -10,5 +11,6 @@ public interface IStockService
     Task<StockAvailableResponseDto> GetByProductIdAsync(Guid productId, Guid sellerId);
     Task UpdateQuantityAsync(StockUpdateDto stockUpdateDto, Guid sellerId);
     Task AddAsync(StockCreateDto stockCreateDTO, Guid sellerId);
+    Task DebitStockAsync(List<OrderReservationItemDto> listOrderItens, IEnumerable<StockEntity> listStock);
 
 }

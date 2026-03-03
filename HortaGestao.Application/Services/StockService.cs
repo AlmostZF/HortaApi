@@ -3,6 +3,7 @@ using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
+using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.IRepositories;
 
 namespace HortaGestao.Application.Services;
@@ -71,6 +72,22 @@ public class StockService : IStockService
 
         var stockEntity = StockMapper.ToCreateEntity(stockCreateDto, productEntity.UnitPrice);
         await _stockRepository.AddAsync(stockEntity);
+    }
+    public async Task DebitStockAsync(List<OrderReservationItemDto> listOrderItens, IEnumerable<StockEntity> listStock)
+    {
+        foreach (var item in listStock)
+        {
+            var orderItem = listOrderItens
+                .FirstOrDefault(l => l.ProductId == item.ProductId);
+            if (orderItem != null)
+            {
+                if(item.Quantity < orderItem.Quantity)
+                    throw new Exception("estoque insuficiente");
+
+                item.RemoveQuantity(item.Quantity);
+            }
+            await _stockRepository.UpdateQuantityAsync(item);
+        }
     }
     
 }
