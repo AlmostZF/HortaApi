@@ -26,7 +26,7 @@ public class CreateStockUseCase
                 return Result.Failure("Usuário não encontrado.", 404);
             
             Console.WriteLine(id);
-            await _stockService.AddAsync(stockCreate, id.Value);
+            await _stockService.CreateAsync(stockCreate, id.Value);
             return Result.Success("Stock criado com sucesso",200);
         }
         catch (Exception e)

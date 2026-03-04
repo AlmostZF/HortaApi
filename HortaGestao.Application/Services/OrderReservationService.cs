@@ -81,17 +81,7 @@ public class OrderReservationService : IOrderReservationService
             
             var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
 
-            foreach (var item in stockEntities)
-            {
-                var orderItem = orderReservation.ListOrderItems.
-                    FirstOrDefault(x => x.ProductId == item.ProductId);
-                if (orderItem != null)
-                {
-                    item.AddQuantity(orderItem.Quantity);
-                }
-                
-            }
-            await _stockRepository.UpdateRangeAsync(stockEntities);
+            await _stockService.AddStockAsync(orderReservation, stockEntities);
         
             await _orderReservationRepository.UpdateStatusAsync("Cancelada",orderReservation.Id);
             
@@ -121,18 +111,8 @@ public class OrderReservationService : IOrderReservationService
             var productsEntities = await _productRepository.GetManyProducts(productsIds);
             
             var stockEntities = await _stockRepository.GetByProductIdsAsync(productsIds);
-
-            foreach (var item in stockEntities)
-            {
-                var orderItem = orderReservation.ListOrderItems.
-                    FirstOrDefault(x => x.ProductId == item.ProductId);
-                if (orderItem != null)
-                {
-                    item.AddQuantity(orderItem.Quantity);
-                }
-                
-            }
-            await _stockRepository.UpdateRangeAsync(stockEntities);
+            
+            await _stockService.AddStockAsync(orderReservation, stockEntities);
             
             var items = await CalculateOrderItemsAsync(productsEntities,
                 orderReservationUpdateDTO.listOrderItens);

@@ -60,7 +60,7 @@ public class StockService : IStockService
         return stockAvailableDto;
     }
 
-    public async Task AddAsync(StockCreateDto stockCreateDto, Guid sellerId)
+    public async Task CreateAsync(StockCreateDto stockCreateDto, Guid sellerId)
     {
         var stockEntityWithProduct = await _stockRepository.GetByProductIdAsync(stockCreateDto.ProductId, sellerId);
         if (stockEntityWithProduct != null )
@@ -89,5 +89,20 @@ public class StockService : IStockService
             await _stockRepository.UpdateQuantityAsync(item);
         }
     }
-    
+
+    public async Task AddStockAsync(OrderReservationEntity orderReservation, IEnumerable<StockEntity> listStock)
+    {
+        var stockEntities = listStock.ToList();
+        foreach (var item in stockEntities)
+        {
+            var orderItem = orderReservation.ListOrderItems.
+                FirstOrDefault(x => x.ProductId == item.ProductId);
+            if (orderItem != null)
+            {
+                item.AddQuantity(orderItem.Quantity);
+            }
+                
+        }
+        await _stockRepository.UpdateRangeAsync(stockEntities);
+    }
 }

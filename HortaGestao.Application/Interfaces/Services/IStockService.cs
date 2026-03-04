@@ -10,7 +10,8 @@ public interface IStockService
     Task<StockResponseDto> GetByIdAsync(Guid stockId, Guid sellerId);
     Task<StockAvailableResponseDto> GetByProductIdAsync(Guid productId, Guid sellerId);
     Task UpdateQuantityAsync(StockUpdateDto stockUpdateDto, Guid sellerId);
-    Task AddAsync(StockCreateDto stockCreateDTO, Guid sellerId);
+    Task CreateAsync(StockCreateDto stockCreateDTO, Guid sellerId);
     Task DebitStockAsync(List<OrderReservationItemDto> listOrderItens, IEnumerable<StockEntity> listStock);
+    Task AddStockAsync(OrderReservationEntity orderReservation, IEnumerable<StockEntity> listStock);
 
 }
