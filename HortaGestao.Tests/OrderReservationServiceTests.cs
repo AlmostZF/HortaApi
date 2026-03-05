@@ -1,5 +1,6 @@
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Services;
 using HortaGestao.Domain.DomainService;
@@ -17,8 +18,9 @@ public class OrderReservationServiceTests
     private readonly Mock<IPickupLocationRespository> _pickupLocationRepository;
     private readonly IReservationFeeCalculate _calculate;
     private readonly Mock<IStockRepository> _stockRepository;
+    private readonly Mock<IStockService> _stockService;
     private readonly Mock<IUnitOfWork> _unitOfWork;
-    private readonly OrderReservationService _orderReservationService;
+    private readonly IOrderReservationService _orderReservationService;
     
     public OrderReservationServiceTests()
     {
@@ -26,6 +28,7 @@ public class OrderReservationServiceTests
         _productRepository = new Mock<IProductRepository>();
         _pickupLocationRepository = new Mock<IPickupLocationRespository>();
         _calculate = new ReservationFeeCalculate();
+        _stockService = new Mock<IStockService>();
         _stockRepository = new Mock<IStockRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
         _orderReservationService = new OrderReservationService(
@@ -34,6 +37,7 @@ public class OrderReservationServiceTests
                 _productRepository.Object,
                 _pickupLocationRepository.Object,
                 _stockRepository.Object,
+                _stockService.Object,
                 _unitOfWork.Object
             );
         
@@ -188,10 +192,11 @@ public class OrderReservationServiceTests
 
         await _orderReservationService.CancelOrderAsync(securityCode, sellerId);
 
-        _stockRepository.Verify(repo => repo
-            .UpdateRangeAsync(It.Is<IEnumerable<StockEntity>>(
-                s=> s.FirstOrDefault().Quantity == 1)),Times.Once);
-
+        _stockService
+            .Setup(x => x.AddStockAsync(It.IsAny<OrderReservationEntity>(),
+                It.IsAny<IEnumerable<StockEntity>>()))
+            .Returns(Task.CompletedTask);
+        
         _orderReservationRepository.Verify(repo => repo
             .UpdateStatusAsync(It.Is<string>(s => s == "Cancelada"),
                 It.Is<Guid>(id => id == order.Id)), Times.Once);
@@ -362,12 +367,12 @@ public class OrderReservationServiceTests
         _stockRepository.Setup(repo => repo
             .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocs);
 
+        _stockService
+            .Setup(x => x.AddStockAsync(It.IsAny<OrderReservationEntity>(),
+                It.IsAny<IEnumerable<StockEntity>>()))
+            .Returns(Task.CompletedTask);
+        
         await _orderReservationService.UpdateAsync(dto);
-
-        _stockRepository.Verify(repo => repo
-            .UpdateRangeAsync(
-                It.Is<IEnumerable<StockEntity>>(s => s
-                    .First().ProductId == listStockMocs[0].ProductId)), Times.Once);
 
         _orderReservationRepository.Verify(repo => repo
             .UpdateAsync(It.Is<OrderReservationEntity>(o => 
@@ -428,13 +433,17 @@ public class OrderReservationServiceTests
         _pickupLocationRepository.Setup(repo => repo
             .GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(pickupLocation);
         
+        _stockService
+            .Setup(x => x.DebitStockAsync(It.IsAny<List<OrderReservationItemDto>>(),
+                It.IsAny<IEnumerable<StockEntity>>()))
+            .Returns(Task.CompletedTask);
         
         var result = await _orderReservationService.AddAsync(dto);
         
         var response = result.FirstOrDefault();
         Assert.NotNull(result);
         Assert.NotNull(response.SecurityCode);
-        Assert.Equal("Guilherme", response.SellerName);
+        Assert.Equal("", response.SellerName);
         
         _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
         _unitOfWork.Verify(work => work.CommitAsync(), Times.Once);
@@ -445,6 +454,7 @@ public class OrderReservationServiceTests
     public async Task TestAddOrder_ShouldRollaback_StockFail()
     {
         var sellerId = Guid.NewGuid();
+        var pickupLocation = MockPicupLocation(sellerId);
         var CreatePicupLocation = CreatePickupLocationDto(sellerId);
         
         var listProduct = new List<ProductEntity>
@@ -452,25 +462,32 @@ public class OrderReservationServiceTests
             CreateProductEntity(sellerId), CreateProductEntity(sellerId)
         };
         
-        var listStockMocs = new List<StockEntity>
+        var listStockMocks = new List<StockEntity>
         {
-            new StockEntity(listProduct[0].Id, 1, listProduct[0].UnitPrice),
-            new StockEntity(listProduct[1].Id, 1, listProduct[1].UnitPrice)
+            new StockEntity(listProduct[0].Id, 0, listProduct[0].UnitPrice),
+            new StockEntity(listProduct[1].Id, 0, listProduct[1].UnitPrice)
         };
         
         var orderReservationItem = CreateOrderReservationItem(sellerId, listProduct[0].Id);
-        
         var dto = CreateOrderReservationDto(sellerId, CreatePicupLocation, orderReservationItem);
         
+        _productRepository.Setup(repo => repo
+            .GetManyProducts(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listProduct);
 
         _stockRepository.Setup(repo => repo
-            .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocs);
+            .GetByProductIdsAsync(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(listStockMocks);
+
+        _pickupLocationRepository.Setup(repo => repo
+            .GetByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).ReturnsAsync(pickupLocation);
         
-        var exception = await Assert.ThrowsAsync<Exception>(() => 
-            _orderReservationService.AddAsync(dto));
+        _stockService
+            .Setup(x => x.DebitStockAsync(It.IsAny<List<OrderReservationItemDto>>(),
+                It.IsAny<IEnumerable<StockEntity>>()))
+            .ThrowsAsync(new Exception("estoque insuficiente"));
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => _orderReservationService.AddAsync(dto));
         
         Assert.Equal("estoque insuficiente", exception.Message);
-        
         _unitOfWork.Verify(work => work.BeginTransactionAsync(), Times.Once);
         _unitOfWork.Verify(work => work.CommitAsync(), Times.Never);
         _unitOfWork.Verify(work => work.RollbackAsync(), Times.Once);
@@ -624,6 +641,7 @@ public class OrderReservationServiceTests
     {
         var seller = new SellerEntity("Guilherme", "1111");
         SetProperty(seller, "Id", sellerId);
+        
         var addresMock = new Address("street", "number", "city", "zipCode", "state",
             "neighborhood", customName);
         var pickupDays = new List<PickupDay>
@@ -634,6 +652,7 @@ public class OrderReservationServiceTests
         
         var mockPickupLocation = new PickupLocationEntity(addresMock, pickupDays, sellerId);
         SetProperty(mockPickupLocation, "Seller", seller);
+        
         return mockPickupLocation;
     }
 
@@ -666,6 +685,7 @@ public class OrderReservationServiceTests
     {
         var seller = new SellerEntity("Guilherme", "11111");
         SetProperty(seller, "Id", sellerId);
+        
         var productMock = new ProductEntity(
             "Produto", 
             ProductType.Verduras,

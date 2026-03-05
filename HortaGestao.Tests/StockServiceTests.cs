@@ -43,7 +43,7 @@ public class StockServiceTests
         _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId))
             .ReturnsAsync(productMock);
 
-        await _stockService.AddAsync(dto, sellerId);
+        await _stockService.CreateAsync(dto, sellerId);
 
         _stockRepositoryMock.Verify(repo => repo.AddAsync(
             It.Is<StockEntity>(s => s.Total == 4)), Times.Once);
