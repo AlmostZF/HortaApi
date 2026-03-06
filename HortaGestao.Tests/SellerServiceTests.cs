@@ -102,6 +102,33 @@ public class SellerServiceTests
         _RepositoryMock.Verify(repo => repo.UpdateAsync(mockSeller), Times.Once);
     }
     
+    [Fact]
+    public async Task TestUpdateSeller_ShouldFail_HasNoSeller()
+    {
+        var sellerId = Guid.NewGuid();
+        var mockSeller = new SellerEntity("Guilherme", "1111");
+        
+        var pickupLocation = MockPicupLocation(sellerId);
+        mockSeller.AddPickupLocation(pickupLocation);
+        
+        var updateDto = new SellerUpdateDto
+        {
+            Id = sellerId,
+            Name = "Guilherme Alterado",
+            PhoneNumber = "2222",
+        }; 
+        
+        _RepositoryMock.Setup(repo => repo.GetByIdAsync(sellerId))
+            .ReturnsAsync((SellerEntity)null);
+        
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _sellerService.UpdateAsync(updateDto));
+        
+        Assert.Equal("Vendedor não encontrado.", exception.Message);
+
+        _RepositoryMock.Verify(repo => repo.UpdateAsync(mockSeller), Times.Never);
+    }
+    
     
     private PickupLocationEntity MockPicupLocation(Guid sellerId)
     {

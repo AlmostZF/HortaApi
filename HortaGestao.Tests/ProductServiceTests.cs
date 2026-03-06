@@ -63,6 +63,27 @@ public class ProductServiceTests
     }
     
     [Fact]
+    public async Task TestGetProductById_ShouldFail_HasNoProduct()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        
+        var sellerMock = new SellerEntity("Guilherme", "2222");
+        SetProperty(sellerMock, "Id", sellerId);
+
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((ProductEntity)null);
+        
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _productService.GetByIdAsync(productId));
+        
+        Assert.Equal("Produto não encontrado.", exception.Message);
+
+        _productRepositoryMock.Verify(repo => repo.GetByIdAsync(productId), Times.Once);
+
+    }
+    
+    [Fact]
     public async Task TestGetInactiveProductById_ShouldReturnNull()
     {
         var sellerId = Guid.NewGuid();
@@ -175,6 +196,28 @@ public class ProductServiceTests
                                       p.SellerId == sellerId
             )));
     }
+    
+    
+    [Fact]
+    public async Task TestUpdateProduct_ShouldFail_HasNoProduct()
+    {
+        var productId = Guid.NewGuid();
+        var sellerId = Guid.NewGuid();
+
+        var dto = CreateProductUpdateDto(productId);
+
+        var productMoc = CreateProductEntity(sellerId);
+        SetProperty(productMoc, "Id", productId);
+        
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId))
+            .ReturnsAsync((ProductEntity)null);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _productService.UpdateAsync(dto, sellerId));
+        
+        Assert.Equal("Produto não encontrado.", exception.Message);
+        _productRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<ProductEntity>()), Times.Never);
+    }
 
     [Fact]
     public async Task TestUpdateProductStatus()
@@ -196,6 +239,24 @@ public class ProductServiceTests
 
         _productRepositoryMock.Verify(repo => repo.UpdateAsync(
             It.Is<ProductEntity>(p => p.IsActive == true)));
+    }
+    
+    [Fact]
+    public async Task TestUpdateProductStatus_ShouldFail_HasNoProduct()
+    {
+        var productId = Guid.NewGuid();
+        var sellerId = Guid.NewGuid();
+
+        var dto = CreateProductUpdateStatusDto(productId, true);
+        
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId))
+            .ReturnsAsync((ProductEntity)null);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _productService.UpdateStatusAsync(dto));
+        
+        Assert.Equal("Produto não encontrado.", exception.Message);
+        _productRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<ProductEntity>()), Times.Never);
     }
 
     private ProductUpdateStatusDto CreateProductUpdateStatusDto(Guid productId, bool isActive)
