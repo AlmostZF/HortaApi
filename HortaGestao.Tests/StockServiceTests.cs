@@ -77,6 +77,125 @@ public class StockServiceTests
             It.Is<StockEntity>(s => s.Total == 7)), Times.Once);
 
     }
+    
+    [Fact]
+    public async Task TestUpdateStock_ShouldFail_HasNoStock()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        var stockId = Guid.NewGuid();
+        
+        var productMock = CreateProductEntity(sellerId);
+        
+        var stockMock = new StockEntity(productId, 0, 0);
+        SetProperty(stockMock, "Product", productMock);
+
+        var dto = new StockUpdateDto()
+        {
+            Quantity = 7,
+            Id = stockId
+        };
+        
+        _stockRepositoryMock.Setup(repo => repo.GetByIdAsync(dto.Id, sellerId))
+            .ReturnsAsync((StockEntity)null);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => 
+            _stockService.UpdateQuantityAsync(dto, sellerId));
+        
+        Assert.Equal("Stock not found.", exception.Message);
+        
+        _stockRepositoryMock.Verify(repo => repo.UpdateQuantityAsync(
+            It.IsAny<StockEntity>()), Times.Never);
+
+    }
+        
+    [Fact]
+    public async Task TestGetByProductIdAsync_ShouldFail_HasNoStock()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        var stockId = Guid.NewGuid();
+        
+        var productMock = CreateProductEntity(sellerId);
+        
+        var stockMock = new StockEntity(productId, 0, 0);
+        SetProperty(stockMock, "Product", productMock);
+
+        var dto = new StockUpdateDto()
+        {
+            Quantity = 7,
+            Id = stockId
+        };
+        
+        _stockRepositoryMock.Setup(repo => repo.GetByIdAsync(dto.Id, sellerId))
+            .ReturnsAsync((StockEntity)null);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => 
+            _stockService.GetByProductIdAsync(productId, sellerId));
+        
+        Assert.Equal("Erro ao buscar stock por Id do produto ", exception.Message);
+
+    }
+    
+    [Fact]
+    public async Task TestCreateStock_ShouldFail_StockAlreadyHadProduct()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var productMock = CreateProductEntity(sellerId);
+        
+        var dto = new StockCreateDto()
+        {
+            ProductId = productId,
+            Quantity = 4,
+        };
+        
+        _stockRepositoryMock.Setup(repo => repo.GetByProductIdAsync(productId, sellerId))
+            .ReturnsAsync(new StockEntity(productId, 1, 1));
+        
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId))
+            .ReturnsAsync(productMock);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => 
+            _stockService.CreateAsync(dto, sellerId));
+        
+        Assert.Equal("Stock already had product.", exception.Message);
+
+        _stockRepositoryMock.Verify(repo => repo.AddAsync(
+            It.IsAny<StockEntity>()), Times.Never);
+
+    }
+    
+    [Fact]
+    public async Task TestCreateStock_ShouldFail_HasNoProduct()
+    {
+        var sellerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var productMock = CreateProductEntity(sellerId);
+        
+        var dto = new StockCreateDto()
+        {
+            ProductId = productId,
+            Quantity = 4,
+        };
+        
+        _stockRepositoryMock.Setup(repo => repo.GetByProductIdAsync(productId, sellerId))
+            .ReturnsAsync((StockEntity)null);
+        
+        _productRepositoryMock.Setup(repo => repo.GetByIdAsync(productId))
+            .ReturnsAsync((ProductEntity)null);
+        
+        var exception = await Assert.ThrowsAsync<Exception>(() => 
+            _stockService.CreateAsync(dto, sellerId));
+        
+        Assert.Equal("Product not found.", exception.Message);
+
+        _stockRepositoryMock.Verify(repo => repo.AddAsync(
+            It.IsAny<StockEntity>()), Times.Never);
+
+    }
 
     [Fact]
     public async Task TestGetStockByProduct()
