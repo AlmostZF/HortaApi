@@ -9,6 +9,7 @@ using HortaGestao.Infrastructure.Database.AppDbContext;
 using HortaGestao.Infrastructure.Database.UnitOfWork;
 using HortaGestao.Infrastructure.DependecyInjection;
 using HortaGestao.Infrastructure.Identity;
+using HortaGestao.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -34,7 +35,7 @@ builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
 
 builder.Services.AddControllers();
-
+builder.Services.AddHostedService<Consumer>();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
