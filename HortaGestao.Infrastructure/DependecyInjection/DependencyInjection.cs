@@ -13,6 +13,7 @@ using HortaGestao.Application.UseCases.Storage;
 using HortaGestao.Domain.DomainService;
 using HortaGestao.Domain.IRepositories;
 using HortaGestao.Infrastructure.Interfaces;
+using HortaGestao.Infrastructure.Messaging;
 using HortaGestao.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -52,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IPickupLocationService, PickupLocationService>();
         services.AddScoped<IStorageService, StorageService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ISheetImportProcessor, SheetImportProcessor>();
 
         services.AddScoped<LoginUseCase>();
         services.AddScoped<LogoutUseCase>();
