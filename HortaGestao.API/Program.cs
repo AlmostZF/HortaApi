@@ -35,7 +35,7 @@ builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
 
 builder.Services.AddControllers();
-builder.Services.AddHostedService<Consumer>();
+builder.Services.AddHostedService<SheetImportWorker>();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
