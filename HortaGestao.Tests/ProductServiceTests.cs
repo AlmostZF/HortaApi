@@ -1,6 +1,7 @@
 using DDDPractice.DDDPractice.Domain.Enums;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.Interfaces.Services;
+using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Services;
 using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.IRepositories;
@@ -14,13 +15,15 @@ public class ProductServiceTests
     private readonly Mock<IProductRepository> _productRepositoryMock;
     private readonly Mock<IStorageService> _storageServiceMock;
     private readonly ProductService _productService;
+    private readonly Mock<IUnitOfWork> _unitOfWork;
     
     
     public ProductServiceTests()
     {
         _productRepositoryMock = new Mock<IProductRepository>();
         _storageServiceMock = new Mock<IStorageService>();
-        _productService = new ProductService(_productRepositoryMock.Object, _storageServiceMock.Object);
+        _productService = new ProductService(_productRepositoryMock.Object,
+            _storageServiceMock.Object, _unitOfWork.Object);
     }
 
     [Fact]

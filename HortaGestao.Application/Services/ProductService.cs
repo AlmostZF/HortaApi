@@ -1,6 +1,7 @@
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Services;
+using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Application.Shared;
 using HortaGestao.Domain.IRepositories;
@@ -12,10 +13,13 @@ public class ProductService: IProductService
 
     private readonly IProductRepository _productRepository;
     private readonly IStorageService _storageService;
-    public ProductService(IProductRepository productRepository, IStorageService storageService)
+    private readonly IUnitOfWork _unitOfWork;
+    
+    public ProductService(IProductRepository productRepository, IStorageService storageService, IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
         _storageService = storageService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProductResponseDto> GetByIdAsync(Guid id)
@@ -73,10 +77,27 @@ public class ProductService: IProductService
     
     public async Task<Guid> AddAsync(ProductCreateDto productCreateDTO, Guid sellerId )
     {
-        var fileName = await _storageService.SaveFileAsync(productCreateDTO.Image, "products");
-        var productEntity = ProductMapper.ToCreateEntity(productCreateDTO, fileName, sellerId);
-        await _productRepository.AddAsync(productEntity);
-        return productEntity.Id;
+        _unitOfWork.BeginTransactionAsync();
+        var fileName = "";
+        try
+        {
+            
+            fileName = await _storageService.SaveFileAsync(productCreateDTO.Image, "products");
+            var productEntity = ProductMapper.ToCreateEntity(productCreateDTO, fileName, sellerId);
+            await _productRepository.AddAsync(productEntity);
+
+            _unitOfWork.CommitAsync();
+            
+            return productEntity.Id;
+
+        }
+        catch (Exception e)
+        {
+            await _storageService.DeleteFileAsync(fileName, "products");
+            _unitOfWork.RollbackAsync();
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task<List<ProductResponseDto>> GetAllAsync()

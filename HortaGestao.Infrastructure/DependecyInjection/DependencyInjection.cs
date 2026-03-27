@@ -4,6 +4,7 @@ using HortaGestao.Application.Services;
 using HortaGestao.Application.UseCases.Authentication;
 using HortaGestao.Application.UseCases.Customer;
 using HortaGestao.Application.UseCases.Dashboard;
+using HortaGestao.Application.UseCases.MessagingLog;
 using HortaGestao.Application.UseCases.OrderReservation;
 using HortaGestao.Application.UseCases.PickupLocation;
 using HortaGestao.Application.UseCases.Product;
@@ -54,7 +55,10 @@ public static class DependencyInjection
         services.AddScoped<IStorageService, StorageService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<ISheetImportProcessor, SheetImportProcessor>();
-
+        services.AddScoped<IMessagingLogService, MessagingLogService>();
+        
+        services.AddScoped<ErrorQueuePublisher>();
+        services.AddScoped<CreateMessagingLogUseCase>();
         services.AddScoped<LoginUseCase>();
         services.AddScoped<LogoutUseCase>();
         
