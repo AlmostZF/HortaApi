@@ -1,11 +1,9 @@
 using System.Text.Json;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
+using HortaGestao.Application.UseCases.CreateProductWithStockUseCase;
 using HortaGestao.Application.UseCases.MessagingLog;
-using HortaGestao.Application.UseCases.Product;
-using HortaGestao.Application.UseCases.Stock;
 using HortaGestao.Infrastructure.Messaging;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HortaGestao.Infrastructure.Interfaces;
@@ -24,27 +22,25 @@ public class SheetImportProcessor: ISheetImportProcessor
     public async Task ProcessMessageAsync(string messageContent)
     {
         using var scope = _serviceProvider.CreateScope();
-    
-        var createProductUseCase = scope.ServiceProvider.GetRequiredService<CreateProductUseCase>();
-        var createStockUseCase = scope.ServiceProvider.GetRequiredService<CreateStockUseCase>();
+        
         var createMesagingLog = scope.ServiceProvider.GetRequiredService<CreateMessagingLogUseCase>();
+        var createProductWithStock = scope.ServiceProvider.GetRequiredService<CreateProductWithStockUseCase>();
+        
         ImportMessagingDto importData = null;
         
         try
         {
             importData = await ParseMessage(messageContent);
-            var product = await createProductUseCase.ExecuteAsync(importData.Product, importData.SellerId);
+
+            var product = await createProductWithStock.ExecuteAsync(importData.Product, importData.Quantity,
+                importData.SellerId);
 
             if (product.IsSuccess == false)
             {
                 var result = await createMesagingLog.ExecuteAsync(importData, product.Error);
                 await _errorWorker.PublishErrorAsync(result.Value);
-                return;
             }
-
-            var stockDto = new StockCreateDto { ProductId = product.Value, Quantity = importData.Quantity };
-            await createStockUseCase.ExecuteAsync(stockDto, importData.SellerId);
-
+            
         }
         catch (Exception e)
         {
@@ -63,8 +59,7 @@ public class SheetImportProcessor: ISheetImportProcessor
         
             throw;
         }
-
-
+        
     }
     
     private async Task<ImportMessagingDto> ParseMessage(string json)
@@ -73,11 +68,8 @@ public class SheetImportProcessor: ISheetImportProcessor
         JsonElement root = doc.RootElement;
         
         var productInfo = root.GetProperty("Data");
-        string base64Image = productInfo.GetProperty("Image").GetString();
-
-        var image = createImage(base64Image);
-        var product = createDto(productInfo, image);
         
+        var product = createDto(productInfo);
         
         var quantity = productInfo.GetProperty("Quantity").ValueKind == JsonValueKind.Null
             ? 0
@@ -99,29 +91,8 @@ public class SheetImportProcessor: ISheetImportProcessor
 
         return result;
     }
-
-    private IFormFile createImage(string base64Image)
-    {
-        IFormFile imageFile = null;
-                
-        if (!string.IsNullOrEmpty(base64Image))
-        {
-            var base64Data = base64Image.Contains(",") ? base64Image.Split(',')[1] : base64Image;
-            byte[] imageBytes = Convert.FromBase64String(base64Data);
-            var stream = new MemoryStream(imageBytes);
-            stream.Position = 0;
-            
-            imageFile = new FormFile(stream, 0, stream.Length, "Image", "produto.png")
-            {
-                Headers = new HeaderDictionary(),
-                ContentType = "image/png"
-            };
-        }
-
-        return imageFile;
-    }
-
-    private ProductCreateDto createDto(JsonElement productInfo, IFormFile imageFile)
+    
+    private ProductCreateDto createDto(JsonElement productInfo)
     {
         return new ProductCreateDto
         {
@@ -133,7 +104,7 @@ public class SheetImportProcessor: ISheetImportProcessor
                 ? 0 : productInfo.GetProperty("UnitPrice").GetDecimal(),
             Weight = productInfo.GetProperty("Weight").GetString(),
             ConservationDays = productInfo.GetProperty("ConservationDays").GetString(),
-            Image = imageFile
+            Image = null
         };
     }
     

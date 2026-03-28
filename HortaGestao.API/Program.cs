@@ -35,6 +35,7 @@ builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddHostedService<SheetImportWorker>();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -99,6 +100,8 @@ builder.Services.AddAuthorization(options =>
 
 
 var app = builder.Build();
+
+app.MapHub<ImportHub>("/importProgressHub");
 
 app.UseMiddleware<JwtAuthenticationMiddleware>(jwtSection["key"]);
 
