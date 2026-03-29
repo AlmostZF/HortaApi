@@ -19,7 +19,7 @@ public class CreateMessagingLogUseCase
     {
         try
         {
-            var result = await _logService.SaveLogAsync(importMessagingDto, messageError);
+            var result = await _logService.GetLogAsync(importMessagingDto, messageError);
             return Result<MessagingLogDto>.Success(result, 200);
         }
         catch (Exception e)

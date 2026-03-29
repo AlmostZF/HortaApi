@@ -15,7 +15,6 @@ public class ProductServiceTests
     private readonly Mock<IProductRepository> _productRepositoryMock;
     private readonly Mock<IStorageService> _storageServiceMock;
     private readonly ProductService _productService;
-    private readonly Mock<IUnitOfWork> _unitOfWork;
     
     
     public ProductServiceTests()
@@ -23,7 +22,7 @@ public class ProductServiceTests
         _productRepositoryMock = new Mock<IProductRepository>();
         _storageServiceMock = new Mock<IStorageService>();
         _productService = new ProductService(_productRepositoryMock.Object,
-            _storageServiceMock.Object, _unitOfWork.Object);
+            _storageServiceMock.Object);
     }
 
     [Fact]

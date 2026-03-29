@@ -12,11 +12,13 @@ public class ProductCreateDto
     
     public string ConservationDays { get; set; }
 
-    public IFormFile Image { get; set; }
+    public IFormFile? Image { get; set; }
 
     public string ShortDescription { get; set; }
     
     public string LargeDescription { get; set; }
     
     public string Weight { get; set; }
+
+    public int Quantity { get; set; }
 }

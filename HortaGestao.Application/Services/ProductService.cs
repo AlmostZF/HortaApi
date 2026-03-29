@@ -13,13 +13,11 @@ public class ProductService: IProductService
 
     private readonly IProductRepository _productRepository;
     private readonly IStorageService _storageService;
-    private readonly IUnitOfWork _unitOfWork;
     
-    public ProductService(IProductRepository productRepository, IStorageService storageService, IUnitOfWork unitOfWork)
+    public ProductService(IProductRepository productRepository, IStorageService storageService)
     {
         _productRepository = productRepository;
         _storageService = storageService;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProductResponseDto> GetByIdAsync(Guid id)
@@ -66,6 +64,9 @@ public class ProductService: IProductService
             throw new InvalidOperationException("Produto não encontrado.");
         }
 
+        if (string.IsNullOrEmpty(existingProduct.Image))
+            throw new InvalidOperationException("Produto sem Imagem não podem serem ativos.");
+
         ProductMapper.ToUpdateStatus(existingProduct, productUpdateStatusDto.IsActive);    
         await _productRepository.UpdateAsync(existingProduct);
     }
@@ -77,16 +78,14 @@ public class ProductService: IProductService
     
     public async Task<Guid> AddAsync(ProductCreateDto productCreateDTO, Guid sellerId )
     {
-        _unitOfWork.BeginTransactionAsync();
         var fileName = "";
         try
         {
+            if(productCreateDTO.Image != null)
+                fileName = await _storageService.SaveFileAsync(productCreateDTO.Image, "products");
             
-            fileName = await _storageService.SaveFileAsync(productCreateDTO.Image, "products");
             var productEntity = ProductMapper.ToCreateEntity(productCreateDTO, fileName, sellerId);
             await _productRepository.AddAsync(productEntity);
-
-            _unitOfWork.CommitAsync();
             
             return productEntity.Id;
 
@@ -94,8 +93,6 @@ public class ProductService: IProductService
         catch (Exception e)
         {
             await _storageService.DeleteFileAsync(fileName, "products");
-            _unitOfWork.RollbackAsync();
-            Console.WriteLine(e);
             throw;
         }
     }

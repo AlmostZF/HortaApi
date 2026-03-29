@@ -6,5 +6,5 @@ namespace HortaGestao.Application.Services;
 public interface IMessagingLogService
 
 {
-    public Task<MessagingLogDto> SaveLogAsync(ImportMessagingDto importMessagingDto, string messageError);
+    public Task<MessagingLogDto> GetLogAsync(ImportMessagingDto importMessagingDto, string messageError);
 }

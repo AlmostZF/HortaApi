@@ -2,6 +2,7 @@ using HortaGestao.Application.Interfaces.Repositories;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Services;
 using HortaGestao.Application.UseCases.Authentication;
+using HortaGestao.Application.UseCases.CreateProductWithStockUseCase;
 using HortaGestao.Application.UseCases.Customer;
 using HortaGestao.Application.UseCases.Dashboard;
 using HortaGestao.Application.UseCases.MessagingLog;
@@ -16,6 +17,7 @@ using HortaGestao.Domain.IRepositories;
 using HortaGestao.Infrastructure.Interfaces;
 using HortaGestao.Infrastructure.Messaging;
 using HortaGestao.Infrastructure.Repositories;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HortaGestao.Infrastructure.DependecyInjection;
@@ -87,6 +89,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteProductUseCase>();
         services.AddScoped<FilterProductsUseCase>();
         services.AddScoped<UpdateProductStatusUseCase>();
+        services.AddScoped<CreateProductWithStockUseCase>();
 
         services.AddScoped<CreateOrderUseCase>();
         services.AddScoped<DeleteOrderUseCase>();

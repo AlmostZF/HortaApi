@@ -62,14 +62,14 @@ public class ProductEntity
 
     public static ProductType StringToProductType(string productType)
     {
-        if (Enum.TryParse<ProductType>(productType, ignoreCase: true, out var categoryEnum))
+        if (Enum.TryParse<ProductType>(productType, ignoreCase: true, out var categoryEnum)
+            && Enum.IsDefined(typeof(ProductType), categoryEnum))
         {
            return categoryEnum;
         }
 
-        return categoryEnum;
+        throw new ArgumentException($"Product Type '{productType}' is not valid.");
     }
-    
     
 
     public void UpdatePrice(decimal newPrice)

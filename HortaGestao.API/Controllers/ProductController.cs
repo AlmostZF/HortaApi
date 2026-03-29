@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Application.UseCases.CreateProductWithStockUseCase;
 using HortaGestao.Application.UseCases.Product;
 using HortaGestao.Application.UseCases.Storage;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +14,6 @@ namespace HortaGestao.API.Controllers;
 public class ProductController: ControllerBase
 {
     
-    private readonly CreateProductUseCase _createProductUseCase;
     private readonly DeleteProductUseCase _deleteProductUseCase;
     private readonly GetAllProductUseCase _getAllProductUseCase;
     private readonly GetProductUseCase _getProductUseCase;
@@ -21,18 +21,18 @@ public class ProductController: ControllerBase
     private readonly FilterProductsUseCase _filterProductsUseCase;
     private readonly UpdateProductStatusUseCase _updateProductStatusUseCase;
     private readonly GetImageUseCase _getImageUseCase;
+    private readonly CreateProductWithStockUseCase _createProductWithStockUseCase;
 
     public ProductController(
-        CreateProductUseCase createProductUseCase,
         DeleteProductUseCase deleteProductUseCase,
         GetAllProductUseCase getAllProductUseCase,
         GetProductUseCase getProductUseCase,
         UpdateProductUseCase updateProductUseCase,
         UpdateProductStatusUseCase updateProductStatusUseCase,
         FilterProductsUseCase filterProductsUseCase,
-        GetImageUseCase getImageUseCase)
+        GetImageUseCase getImageUseCase,
+        CreateProductWithStockUseCase createProductWithStockUseCase)
     {
-        _createProductUseCase = createProductUseCase;
         _deleteProductUseCase = deleteProductUseCase;
         _getAllProductUseCase = getAllProductUseCase;
         _getProductUseCase = getProductUseCase;
@@ -40,6 +40,7 @@ public class ProductController: ControllerBase
         _filterProductsUseCase = filterProductsUseCase;
         _updateProductStatusUseCase = updateProductStatusUseCase;
         _getImageUseCase = getImageUseCase;
+        _createProductWithStockUseCase = createProductWithStockUseCase;
     }
 
     [AllowAnonymous]
@@ -95,7 +96,8 @@ public class ProductController: ControllerBase
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
         Guid.TryParse(stringcurrentUserId, out Guid currentUserId);
-        var result = await _createProductUseCase.ExecuteAsync(productCreateDTO, currentUserId);
+        var result = await _createProductWithStockUseCase.ExecuteAsync(productCreateDTO,
+            productCreateDTO.Quantity, currentUserId);
 
         return result.Value != Guid.Empty
             ? Created($"/api/products/{result.Value}",result.Value)
