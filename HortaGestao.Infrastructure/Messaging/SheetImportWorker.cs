@@ -26,6 +26,8 @@ public class SheetImportWorker: BackgroundService
         using var connection = await factory.CreateConnectionAsync(stoppingToken);
         using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
+        await channel.QueueDeclareAsync(queue: "import_sheet", durable: false, exclusive: false, autoDelete: false,
+            arguments: null);
         
         var messageCount = await channel.MessageCountAsync("import_sheet");
         int total = (int)messageCount;
@@ -33,8 +35,6 @@ public class SheetImportWorker: BackgroundService
         
         if (total == 0) return;
         
-        await channel.QueueDeclareAsync(queue: "import_sheet", durable: false, exclusive: false, autoDelete: false,
-            arguments: null);
 
         await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
         
@@ -78,6 +78,7 @@ public class SheetImportWorker: BackgroundService
         
         await Task.Delay(Timeout.Infinite, stoppingToken);
 
+        total = 0;
     }
 }
 

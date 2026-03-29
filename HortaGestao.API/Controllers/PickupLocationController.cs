@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Application.UseCases.CreateProductWithStockUseCase;
 using HortaGestao.Application.UseCases.PickupLocation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,20 +13,24 @@ namespace HortaGestao.API.Controllers;
 public class PickupLocationController:ControllerBase
 {
     
-    CreatePickupLocationUseCase _createPickupLocationUseCase;
-    UpdatePickupLocationUseCase _updatePickupLocationUseCase;
-    DeletePickupLocationUseCase _deletePickupLocationUseCase;
-    GetByIdPickupLocationUseCase  _getByIdPickupLocationUseCase;
+    private readonly CreatePickupLocationUseCase _createPickupLocationUseCase;
+    private readonly UpdatePickupLocationUseCase _updatePickupLocationUseCase;
+    private readonly DeletePickupLocationUseCase _deletePickupLocationUseCase;
+    private readonly GetByIdPickupLocationUseCase  _getByIdPickupLocationUseCase;
+
+    
 
     public PickupLocationController(CreatePickupLocationUseCase createPickupLocationUseCase,
         UpdatePickupLocationUseCase updatePickupLocationUseCase,
         DeletePickupLocationUseCase deletePickupLocationUseCase,
-        GetByIdPickupLocationUseCase getByIdPickupLocationUseCase)
+        GetByIdPickupLocationUseCase getByIdPickupLocationUseCase
+       )
     {
         _createPickupLocationUseCase = createPickupLocationUseCase;
         _updatePickupLocationUseCase = updatePickupLocationUseCase;
         _deletePickupLocationUseCase = deletePickupLocationUseCase;
         _getByIdPickupLocationUseCase = getByIdPickupLocationUseCase;
+        
     }
     
     [Authorize(Policy = "SellerRights")]
