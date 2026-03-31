@@ -1,5 +1,3 @@
-
-using HortaGestao.Application.DTOs;
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Shared;

@@ -83,6 +83,21 @@ builder.Services.AddAuthentication(options =>
             ClockSkew = TimeSpan.Zero,
             RoleClaimType = ClaimTypes.Role
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/importProgressHub"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 
@@ -100,10 +115,7 @@ builder.Services.AddAuthorization(options =>
 
 
 var app = builder.Build();
-
-app.MapHub<ImportHub>("/importProgressHub");
-
-app.UseMiddleware<JwtAuthenticationMiddleware>(jwtSection["key"]);
+app.UseCors("AllowSpecificOrigin");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -120,13 +132,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
-app.UseCors("AllowSpecificOrigin");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+//app.UseMiddleware<JwtAuthenticationMiddleware>(jwtSection["key"]);
+app.MapHub<ImportHub>("/importProgressHub");
 app.MapControllers();
+
 
 
 app.Run();

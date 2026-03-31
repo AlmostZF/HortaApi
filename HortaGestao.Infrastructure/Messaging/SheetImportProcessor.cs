@@ -39,6 +39,7 @@ public class SheetImportProcessor: ISheetImportProcessor
             {
                 var result = await createMesagingLog.ExecuteAsync(importData, product.Error);
                 await _errorWorker.PublishErrorAsync(result.Value);
+                throw new Exception(product.Error);
             }
             
         }

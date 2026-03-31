@@ -8,4 +8,5 @@ public class ImportMessagingDto
     public ProductCreateDto Product { get; set; }
     public int Quantity { get; set; }
     public string Line { get; set; }
+    public int TotalMessages { get; set; }
 }
