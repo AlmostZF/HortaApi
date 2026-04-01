@@ -1,5 +1,6 @@
+using HortaGestao.Application.DTOs.Response;
 
 public interface ISheetImportProcessor
 {
-    Task ProcessMessageAsync(string messageContent);
+    Task<MessagingLogDto> ProcessMessageAsync(string messageContent);
 }

@@ -19,7 +19,7 @@ public class SheetImportProcessor: ISheetImportProcessor
         _errorWorker = errorWorker;
     }
 
-    public async Task ProcessMessageAsync(string messageContent)
+    public async Task<MessagingLogDto> ProcessMessageAsync(string messageContent)
     {
         using var scope = _serviceProvider.CreateScope();
         
@@ -34,31 +34,31 @@ public class SheetImportProcessor: ISheetImportProcessor
 
             var product = await createProductWithStock.ExecuteAsync(importData.Product, importData.Quantity,
                 importData.SellerId);
-
-            if (product.IsSuccess == false)
-            {
+            
                 var result = await createMesagingLog.ExecuteAsync(importData, product.Error);
                 await _errorWorker.PublishErrorAsync(result.Value);
-                throw new Exception(product.Error);
-            }
-            
+                return result.Value;
+
         }
         catch (Exception e)
         {
-            if (importData == null) 
+            if (importData == null)
             {
                 await _errorWorker.PublishErrorAsync(new MessagingLogDto {
                     MessageError = $"Erro crítico no mapeamento do JSON: {e.Message}",
                     CreatedAt = DateTime.Now
                 });
+                
+                return new MessagingLogDto
+                {
+                    MessageError = $"Erro crítico no mapeamento do JSON: {e.Message}",
+                    CreatedAt = DateTime.Now
+                };
             }
-            else 
-            {
-                var result = await createMesagingLog.ExecuteAsync(importData, e.Message);
-                await _errorWorker.PublishErrorAsync(result.Value);
-            }
-        
-            throw;
+            
+            var result = await createMesagingLog.ExecuteAsync(importData, e.Message);
+            await _errorWorker.PublishErrorAsync(result.Value);
+            return result.Value;
         }
         
     }

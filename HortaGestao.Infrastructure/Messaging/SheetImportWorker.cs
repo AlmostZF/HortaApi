@@ -52,7 +52,7 @@ public class SheetImportWorker: BackgroundService
                 try
                 {
                     var processor = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ISheetImportProcessor>();
-                    await processor.ProcessMessageAsync(message);
+                    var messageDto = await processor.ProcessMessageAsync(message);
                     
                     int current = processedItems ++;
                     int total = importData.TotalMessages;
@@ -68,7 +68,8 @@ public class SheetImportWorker: BackgroundService
                     await _hubContext.Clients.All.SendAsync("ReceiveProgress", new {
                         Current = current,
                         Total = total,
-                        Percentage = Math.Round(percentage, 2)
+                        Percentage = Math.Round(percentage, 2),
+                        MessageDto = messageDto
                     });
                     
                     await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
