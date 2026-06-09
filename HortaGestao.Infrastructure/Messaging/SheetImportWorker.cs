@@ -15,7 +15,7 @@ public class SheetImportWorker: BackgroundService
     
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHubContext<ImportHub> _hubContext;
-    
+    private int _processedItems = 0; 
     public SheetImportWorker(IServiceScopeFactory scopeFactory, IHubContext<ImportHub> hubContext)
     {
         _scopeFactory = scopeFactory;
@@ -24,7 +24,6 @@ public class SheetImportWorker: BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        
         var factory = new ConnectionFactory { HostName = "localhost" };
         using var connection = await factory.CreateConnectionAsync(stoppingToken);
         using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
@@ -45,24 +44,28 @@ public class SheetImportWorker: BackgroundService
 
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
+            
             var importData = JsonSerializer.Deserialize<ImportMessagingDto>(message);
             
+            string planilhaId = importData.ImportId.ToString(); 
+            int total = importData.TotalMessages;
+            int current = Interlocked.Increment(ref _processedItems);
             using (var scope = _scopeFactory.CreateScope())
             {
                 try
                 {
                     var processor = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ISheetImportProcessor>();
                     var messageDto = await processor.ProcessMessageAsync(message);
-                    
-                    int current = processedItems ++;
-                    int total = importData.TotalMessages;
-                    if (current > total) current = 0;
-                    
                     double percentage = total > 0 ? (double)current / total * 100 : 0;
-                    
+
                     if (double.IsInfinity(percentage) || double.IsNaN(percentage)) 
                     {
                         percentage = 0;
+                    }
+                    
+                    if (current >= total)
+                    {
+                        Interlocked.Exchange(ref _processedItems, 0);
                     }
                     
                     await _hubContext.Clients.All.SendAsync("ReceiveProgress", new {

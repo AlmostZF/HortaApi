@@ -90,7 +90,7 @@ builder.Services.AddAuthentication(options =>
                 var accessToken = context.Request.Query["access_token"];
 
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/importProgressHub"))
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/v1/importProgressHub"))
                 {
                     context.Token = accessToken;
                 }
@@ -136,7 +136,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 //app.UseMiddleware<JwtAuthenticationMiddleware>(jwtSection["key"]);
-app.MapHub<ImportHub>("/importProgressHub");
+app.MapHub<ImportHub>("/api/v1/importProgressHub");
 app.MapControllers();
 
 
