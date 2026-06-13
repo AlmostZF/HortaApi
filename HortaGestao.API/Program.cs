@@ -1,8 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using HortaGestao.API.Middleware;
-using HortaGestao.Application.Interfaces;
 using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.UseCases.Authentication;
 using HortaGestao.Infrastructure.Database.AppDbContext;

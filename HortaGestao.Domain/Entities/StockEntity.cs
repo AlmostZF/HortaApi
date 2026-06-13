@@ -22,6 +22,15 @@ public class StockEntity
         MovementDate = DateTime.UtcNow;
         CalculateTotal(unitPrice, initialQuantity);
     }
+    public StockEntity(ProductEntity product, int initialQuantity, decimal unitPrice)
+    {
+        if (initialQuantity < 0) throw new ArgumentException("Initial stock quantity cannot be negative.");
+        Id = Guid.NewGuid();
+        Product = product ?? throw new ArgumentNullException(nameof(product), "Product cannot be null.");
+        Quantity = initialQuantity;
+        MovementDate = DateTime.UtcNow;
+        CalculateTotal(unitPrice, initialQuantity);
+    }
 
     public void UpdateStock(Guid productId, decimal unitPrice, int quantity)
     {

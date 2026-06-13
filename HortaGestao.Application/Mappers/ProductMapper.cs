@@ -42,6 +42,22 @@ public class ProductMapper
             productCreateDto.ShortDescription,
             productCreateDto.LargeDescription, productCreateDto.Weight);
     }
+    public static List<ProductEntity> ToCreateListEntity(List<ProductCreateDto> listProductCreateDto, Guid sellerId)
+    {
+
+        var listProductCreateEntities = new List<ProductEntity>();
+        foreach (var products in listProductCreateDto)
+        {   
+            var productType = ProductEntity.StringToProductType(products.ProductType); 
+            var productEntity = new ProductEntity( products.Name, productType, products.UnitPrice,
+                sellerId, products.ConservationDays, null,
+                products.ShortDescription,
+                products.LargeDescription, products.Weight);
+            listProductCreateEntities.Add(productEntity);
+        }
+
+        return listProductCreateEntities;
+    }
     
     public static void ToUpdateEntity(ProductEntity productEntity, ProductUpdateDto productUpdateDto, string imagePath ,Guid sellerId)
     {

@@ -105,4 +105,18 @@ public class StockService : IStockService
         }
         await _stockRepository.UpdateRangeAsync(stockEntities);
     }
+
+    public async Task CreateBulkStockAsync(List<ProductCreateDto> listProductCreateDTO, Guid sellerId)
+    {
+        var listStock = new List<StockEntity>();
+        foreach (var product in listProductCreateDTO)
+        {
+            var productEntity = ProductMapper.ToCreateEntity(product, "", sellerId);
+            
+            var stockEntity = StockMapper.ToCreateWithProductEntity(product, productEntity);
+            listStock.Add(stockEntity);
+
+        }
+        await _stockRepository.AddRangeAsync(listStock);
+    }
 }

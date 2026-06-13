@@ -45,6 +45,12 @@ public class StockMapper
 
     }
     
+    public static StockEntity ToCreateWithProductEntity(ProductCreateDto dto, ProductEntity productEntity)
+    {
+        return new StockEntity(productEntity, dto.Quantity, productEntity.UnitPrice);
+
+    }
+    
     public static void ToUpdateEntity(StockEntity stockEntity, StockUpdateDto stockUpdateDTO)
     {
         

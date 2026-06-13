@@ -58,6 +58,21 @@ public class ProductRepository : IProductRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddRangeAsync(List<ProductEntity> product)
+    {
+        const int chunkSize = 500;
+
+        for (int i = 0; i < product.Count; i+= chunkSize)
+        {
+            var chunk = product.Skip(i).Take(chunkSize).ToList();
+            
+            _context.Product.AddRangeAsync(chunk);
+            await _context.SaveChangesAsync();
+
+            _context.ChangeTracker.Clear();
+        }
+    }
+
     public async Task<IEnumerable<ProductEntity>> GetAllAsync()
     {
         return await _context.Product

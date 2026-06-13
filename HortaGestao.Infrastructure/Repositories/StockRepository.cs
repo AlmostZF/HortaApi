@@ -76,4 +76,10 @@ public class StockRepository : IStockRepository
         _context.Stock.Add(stock);
         await _context.SaveChangesAsync();
     }
+
+    public async Task AddRangeAsync(List<StockEntity> listStock)
+    {
+        _context.Stock.AddRangeAsync(listStock);
+        await _context.SaveChangesAsync();
+    }
 }

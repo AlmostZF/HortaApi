@@ -1,7 +1,6 @@
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Services;
-using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Application.Shared;
 using HortaGestao.Domain.IRepositories;
@@ -95,6 +94,13 @@ public class ProductService: IProductService
             await _storageService.DeleteFileAsync(fileName, "products");
             throw;
         }
+    }
+
+    public async Task AddRangeAsync(List<ProductCreateDto> productCreateDTO, Guid sellerId)
+    {
+        var ListProduct = ProductMapper.ToCreateListEntity(productCreateDTO, sellerId);
+        await _productRepository.AddRangeAsync(ListProduct);
+        
     }
 
     public async Task<List<ProductResponseDto>> GetAllAsync()
