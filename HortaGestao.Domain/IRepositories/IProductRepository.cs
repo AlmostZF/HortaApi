@@ -9,6 +9,7 @@ public interface IProductRepository
     Task UpdateAsync (ProductEntity product);
     Task DeleteAsync(Guid id);
     Task AddAsync(ProductEntity product);
+    Task AddRangeAsync(List<ProductEntity> product);
     Task<IEnumerable<ProductEntity>> GetAllAsync();
     Task<IEnumerable<ProductEntity>> FilterAsync(ProductFilter productFilter);
     Task<int> CountAsync(ProductFilter productFilter);

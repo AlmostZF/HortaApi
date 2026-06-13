@@ -11,6 +11,7 @@ public interface IProductService
     Task UpdateStatusAsync (ProductUpdateStatusDto productUpdateStatusDto);
     Task DeleteAsync(Guid id);
     Task<Guid> AddAsync(ProductCreateDto productCreateDTO, Guid sellerId);
+    Task AddRangeAsync(List<ProductCreateDto> productCreateDTO, Guid sellerId);
     Task<List<ProductResponseDto>> GetAllAsync();
     Task<PagedResponse<ProductResponseDto>> FilterAsync(ProductFilterDto productFilterDto);
 }

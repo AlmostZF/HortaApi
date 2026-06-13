@@ -17,7 +17,6 @@ using HortaGestao.Domain.IRepositories;
 using HortaGestao.Infrastructure.Interfaces;
 using HortaGestao.Infrastructure.Messaging;
 using HortaGestao.Infrastructure.Repositories;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HortaGestao.Infrastructure.DependecyInjection;

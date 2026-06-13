@@ -6,7 +6,7 @@ public class MessagingLogDto
 {
     public string MessageError { get; set; }
     public DateTime CreatedAt { get; set; }
-    public ProductCreateDto ProductDto { get; set; }
+    public List<ProductCreateDto> ProductsDto { get; set; }
     public string LineError { get; set; }
     
 }

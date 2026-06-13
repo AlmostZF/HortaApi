@@ -11,5 +11,6 @@ public interface IStockRepository
     Task UpdateQuantityAsync(StockEntity stockEntity);
     Task UpdateRangeAsync(IEnumerable<StockEntity> stockEntities);
     Task AddAsync(StockEntity stock);
+    Task AddRangeAsync(List<StockEntity> stock);
 
 }

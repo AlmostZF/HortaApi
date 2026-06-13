@@ -13,5 +13,6 @@ public interface IStockService
     Task CreateAsync(StockCreateDto stockCreateDTO, Guid sellerId);
     Task DebitStockAsync(List<OrderReservationItemDto> listOrderItens, IEnumerable<StockEntity> listStock);
     Task AddStockAsync(OrderReservationEntity orderReservation, IEnumerable<StockEntity> listStock);
+    Task CreateBulkStockAsync(List<ProductCreateDto> stockCreateDTO, Guid sellerId);
 
 }

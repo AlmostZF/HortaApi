@@ -13,7 +13,7 @@ public class MessagingLogService : IMessagingLogService
             CreatedAt = DateTime.Now,
             LineError = importMessagingDto.Line,
             MessageError = messageError,
-            ProductDto = importMessagingDto.Product
+            ProductsDto = importMessagingDto.Products
         };
 
         return Task.FromResult(result);

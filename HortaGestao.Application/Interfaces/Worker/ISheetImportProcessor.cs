@@ -1,6 +1,8 @@
-using HortaGestao.Application.DTOs.Response;
+using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Infrastructure.Messaging;
+using Microsoft.AspNetCore.SignalR;
 
 public interface ISheetImportProcessor
 {
-    Task<MessagingLogDto> ProcessMessageAsync(string messageContent);
+    Task ProcessBatchAsync(ImportMessagingDto ImportData, IHubContext<ImportHub> hubContext);
 }
