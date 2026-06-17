@@ -1,7 +1,7 @@
+
 using System.Text;
 using System.Text.Json;
 using HortaGestao.Application.DTOs.Request;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
@@ -10,12 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace HortaGestao.Infrastructure.Messaging;
 
-public class SheetImportWorker: BackgroundService
+public class SheetImportWorker : BackgroundService
 {
-    
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHubContext<ImportHub> _hubContext;
-    private int _processedItems = 0; 
+
     public SheetImportWorker(IServiceScopeFactory scopeFactory, IHubContext<ImportHub> hubContext)
     {
         _scopeFactory = scopeFactory;
@@ -28,75 +28,49 @@ public class SheetImportWorker: BackgroundService
         using var connection = await factory.CreateConnectionAsync(stoppingToken);
         using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
         
-
         await channel.QueueDeclareAsync(queue: "import_sheet", durable: false, exclusive: false, autoDelete: false,
             arguments: null);
         
-        int processedItems = 0;
-        
+        await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 5, global: false);
 
-        await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-        
         var consumer = new AsyncEventingBasicConsumer(channel);
-
+        
         consumer.ReceivedAsync += async (model, ea) =>
         {
-
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-            
-            var importData = JsonSerializer.Deserialize<ImportMessagingDto>(message);
-            
-            string planilhaId = importData.ImportId.ToString(); 
-            int total = importData.TotalMessages;
-            int current = Interlocked.Increment(ref _processedItems);
-            using (var scope = _scopeFactory.CreateScope())
+            _ = Task.Run(async () =>
             {
-                try
-                {
-                    var processor = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ISheetImportProcessor>();
-                    var messageDto = await processor.ProcessMessageAsync(message);
-                    double percentage = total > 0 ? (double)current / total * 100 : 0;
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
 
-                    if (double.IsInfinity(percentage) || double.IsNaN(percentage)) 
-                    {
-                        percentage = 0;
-                    }
-                    
-                    if (current >= total)
-                    {
-                        Interlocked.Exchange(ref _processedItems, 0);
-                    }
-                    
-                    await _hubContext.Clients.All.SendAsync("ReceiveProgress", new {
-                        Current = current,
-                        Total = total,
-                        Percentage = Math.Round(percentage, 2),
-                        MessageDto = messageDto
-                    });
-                    
-                    await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
-                }
-                catch (Exception e)
+                var importData = JsonSerializer.Deserialize<ImportMessagingDto>(message);
+                
+                if (importData == null || importData.Products == null)
                 {
-                    await _hubContext.Clients.All.SendAsync("ReceiveImportError", new {
-                        ErrorMessage = e.Message,
-                        Data = importData.Product.Name
-                    });
-                    await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
-                    throw;
+                    await channel.BasicAckAsync(ea.DeliveryTag, false);
+                    return;
                 }
-            }
+
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    try
+                    {
+                        var processor = scope.ServiceProvider.GetRequiredService<ISheetImportProcessor>();
+                        await processor.ProcessBatchAsync(importData, _hubContext);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Erro crítico no processamento da planilha: {e.Message}");
+                    }
+                    finally
+                    {
+                        await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
+                    }
+                }
+            },stoppingToken);
+            await Task.CompletedTask;
         };
-
-        await channel.BasicConsumeAsync("import_sheet", autoAck: false, consumer: consumer);
-        
-        await Task.Delay(Timeout.Infinite, stoppingToken);
-        
+            await channel.BasicConsumeAsync("import_sheet", autoAck: false, consumer: consumer);
+            await Task.Delay(Timeout.Infinite, stoppingToken);
     }
-}
 
-[Authorize]
-public class ImportHub : Hub
-{
 }
