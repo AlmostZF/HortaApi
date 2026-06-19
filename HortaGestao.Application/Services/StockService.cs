@@ -5,6 +5,8 @@ using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Mappers;
 using HortaGestao.Domain.Entities;
 using HortaGestao.Domain.IRepositories;
+using HortaGestao.Infrastructure.Messaging;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HortaGestao.Application.Services;
 
@@ -106,17 +108,59 @@ public class StockService : IStockService
         await _stockRepository.UpdateRangeAsync(stockEntities);
     }
 
-    public async Task CreateBulkStockAsync(List<ProductCreateDto> listProductCreateDTO, Guid sellerId)
+    public async Task CreateBulkStockAsync(List<ProductCreateDto> listProductCreateDTO, Guid sellerId,
+        IHubContext<ImportHub> hubContext, Guid importId)
     {
+        var result = new MessagingLogDto();
+        int total = listProductCreateDTO.Count;
+        int current = 0;
+        
         var listStock = new List<StockEntity>();
+        
         foreach (var product in listProductCreateDTO)
         {
-            var productEntity = ProductMapper.ToCreateEntity(product, "", sellerId);
-            
-            var stockEntity = StockMapper.ToCreateWithProductEntity(product, productEntity);
-            listStock.Add(stockEntity);
+            current++;
+
+            try
+            {
+
+                if (product.Quantity < 0)
+                {
+                    result.ErrorCount++;
+                    result.Errors.Add($"Linha {product}: Quantidade não pode ser negativa");
+                    continue;
+                }
+
+                var productEntity = ProductMapper.ToCreateEntity(product, "", sellerId);
+                var stockEntity = StockMapper.ToCreateWithProductEntity(product, productEntity);
+                listStock.Add(stockEntity);
+                result.SuccessCount++;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                double percentage = total > 0 ? (double)current / total * 100 : 0;
+
+                await hubContext.Clients.User(sellerId.ToString())
+                    .SendAsync("ReceiveProgress", new {
+                        ImportId = importId,
+                        Current = current,
+                        Total = total,
+                        Percentage = Math.Round(percentage, 2)
+                    });
+            }
 
         }
         await _stockRepository.AddRangeAsync(listStock);
+    }
+
+    private async Task Results()
+    {
+        
     }
 }

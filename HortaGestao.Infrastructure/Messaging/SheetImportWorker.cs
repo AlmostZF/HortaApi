@@ -60,6 +60,7 @@ public class SheetImportWorker : BackgroundService
                     catch (Exception e)
                     {
                         Console.WriteLine($"Erro crítico no processamento da planilha: {e.Message}");
+                        
                     }
                     finally
                     {

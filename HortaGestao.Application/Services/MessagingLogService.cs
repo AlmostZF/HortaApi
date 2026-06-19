@@ -11,9 +11,7 @@ public class MessagingLogService : IMessagingLogService
         var result = new MessagingLogDto
         {
             CreatedAt = DateTime.Now,
-            LineError = importMessagingDto.Line,
-            MessageError = messageError,
-            ProductsDto = importMessagingDto.Products
+            LineError = importMessagingDto.Line
         };
 
         return Task.FromResult(result);

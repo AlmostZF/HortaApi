@@ -1,6 +1,8 @@
 using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Domain.Entities;
+using HortaGestao.Infrastructure.Messaging;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HortaGestao.Application.Interfaces.Services;
 
@@ -13,6 +15,7 @@ public interface IStockService
     Task CreateAsync(StockCreateDto stockCreateDTO, Guid sellerId);
     Task DebitStockAsync(List<OrderReservationItemDto> listOrderItens, IEnumerable<StockEntity> listStock);
     Task AddStockAsync(OrderReservationEntity orderReservation, IEnumerable<StockEntity> listStock);
-    Task CreateBulkStockAsync(List<ProductCreateDto> stockCreateDTO, Guid sellerId);
+    Task CreateBulkStockAsync(List<ProductCreateDto> stockCreateDTO, Guid sellerId,
+        IHubContext<ImportHub> hubContext, Guid importId );
 
 }

@@ -88,7 +88,6 @@ public static class DependencyInjection
         services.AddScoped<DeleteProductUseCase>();
         services.AddScoped<FilterProductsUseCase>();
         services.AddScoped<UpdateProductStatusUseCase>();
-        services.AddScoped<CreateProductWithStockUseCase>();
 
         services.AddScoped<CreateOrderUseCase>();
         services.AddScoped<DeleteOrderUseCase>();
@@ -107,6 +106,10 @@ public static class DependencyInjection
         services.AddScoped<UpdatePickupLocationUseCase>();
         services.AddScoped<DeletePickupLocationUseCase>();
         services.AddScoped<GetByIdPickupLocationUseCase>();
+
+        services.AddScoped<CreateProductBulkWithStocUseCase>();
+        services.AddScoped<CreateProductsBulkUseCase>();
+        services.AddScoped<CreateProductWithStockUseCase>();
         
         services.AddScoped<GetDashboardOverviewUseCase>();
 
