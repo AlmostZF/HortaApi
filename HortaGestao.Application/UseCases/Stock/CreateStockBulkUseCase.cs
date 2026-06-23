@@ -2,6 +2,8 @@ using HortaGestao.Application.DTOs.Request;
 using HortaGestao.Application.Interfaces.Repositories;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Shared;
+using HortaGestao.Infrastructure.Messaging;
+using Microsoft.AspNetCore.SignalR;
 
 
 namespace HortaGestao.Application.UseCases.Stock;
@@ -17,15 +19,15 @@ public class CreateStockBulkUseCase
         _authRepository = authRepository;
     }
 
-    public async Task<Result> ExecuteAsync(List<ProductCreateDto> productCreateDtos, Guid identityId)
+    public async Task<Result> ExecuteAsync(ImportMessagingDto importData, IHubContext<ImportHub> hubContext)
     {
         try
         {
-            var id = await _authRepository.GetBusinessIdByIdentityIdAsync(identityId);
+            var id = await _authRepository.GetBusinessIdByIdentityIdAsync(importData.UserId);
             if (id == null)
                 return Result.Failure("Usuário não encontrado.", 404);
             
-            await _stockService.CreateBulkStockAsync(productCreateDtos, id.Value);
+            await _stockService.CreateBulkStockAsync(importData, hubContext, id.Value);
             return Result.Success("Stock criado com sucesso",200);
         }
         catch (Exception e)

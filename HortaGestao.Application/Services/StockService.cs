@@ -108,10 +108,11 @@ public class StockService : IStockService
         await _stockRepository.UpdateRangeAsync(stockEntities);
     }
 
-    public async Task CreateBulkStockAsync(List<ProductCreateDto> listProductCreateDTO, Guid sellerId,
-        IHubContext<ImportHub> hubContext, Guid importId)
+    public async Task<MessagingLogDto> CreateBulkStockAsync(ImportMessagingDto importData, IHubContext<ImportHub> hubContext,
+        Guid sellerId)
     {
         var result = new MessagingLogDto();
+        var listProductCreateDTO = importData.Products;
         int total = listProductCreateDTO.Count;
         int current = 0;
         
@@ -139,16 +140,16 @@ public class StockService : IStockService
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                result.ErrorCount++;
+                result.Errors.Add($"Linha {importData.Line}: Erro inesperado ({e.Message})");
             }
             finally
             {
                 double percentage = total > 0 ? (double)current / total * 100 : 0;
 
-                await hubContext.Clients.User(sellerId.ToString())
-                    .SendAsync("ReceiveProgress", new {
-                        ImportId = importId,
+                await hubContext.Clients.User(importData.UserId.ToString())
+                    .SendAsync("ReceiveImportComplete", new {
+                        ImportId = importData.ImportId,
                         Current = current,
                         Total = total,
                         Percentage = Math.Round(percentage, 2)
@@ -156,9 +157,26 @@ public class StockService : IStockService
             }
 
         }
-        await _stockRepository.AddRangeAsync(listStock);
-    }
 
+        if (listStock.Any())
+        {
+            
+            try
+            {
+                await _stockRepository.AddRangeAsync(listStock);
+                result.IsSuccess = true;
+                return result;
+            }
+
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Message = $"Erro crítico ao persistir no banco: {e.Message}";
+                return result;
+            }
+        }
+        return result;
+    }
     private async Task Results()
     {
         

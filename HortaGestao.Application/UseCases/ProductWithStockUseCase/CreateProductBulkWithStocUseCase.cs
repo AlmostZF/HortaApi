@@ -1,8 +1,11 @@
 using HortaGestao.Application.DTOs.Request;
+using HortaGestao.Application.DTOs.Response;
 using HortaGestao.Application.Interfaces.Repositories;
 using HortaGestao.Application.Interfaces.Services;
 using HortaGestao.Application.Interfaces.UnitOfWork;
 using HortaGestao.Application.Shared;
+using HortaGestao.Infrastructure.Messaging;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HortaGestao.Application.UseCases.CreateProductWithStockUseCase;
 
@@ -20,32 +23,36 @@ public class CreateProductBulkWithStocUseCase
         _stockService = stockService;
     }
     
-    public async Task<Result> ExecuteAsync(List<ProductCreateDto> productList, Guid sellerId)
+    public async Task<Result<MessagingLogDto>> ExecuteAsync(ImportMessagingDto importData, IHubContext<ImportHub> hubContext)
     {
         try
         {
-            var id = await _authRepository.GetBusinessIdByIdentityIdAsync(sellerId);
+            var id = await _authRepository.GetBusinessIdByIdentityIdAsync(importData.UserId);
             if (id == null)
             {
                 //TODO bulkImportResult
-                return Result.Failure("Usuário não encontrado.", 404);
+                return Result<MessagingLogDto>.Failure("Usuário não encontrado.", 404);
                 
             }
 
+            var productList = importData.Products;
             int total = productList.Count;
+ 
             int current = 0;
             
             await _unitOfWork.BeginTransactionAsync();
             
-            _stockService.CreateBulkStockAsync(productList, id.Value);
+            var result = await _stockService.CreateBulkStockAsync(importData, hubContext, id.Value);
+            
+            Console.WriteLine($" [x] Sent {result}");
             
             await _unitOfWork.CommitAsync();
-            return Result.Success("Sucesso", 200);
+            return Result<MessagingLogDto>.Success(result, 200);
         }
         catch (Exception e)
         {
             await _unitOfWork.RollbackAsync();
-            return Result.Failure($"Erro ao persistir o lote no banco: {e.Message}");
+            return Result<MessagingLogDto>.Failure($"Erro ao persistir o lote no banco: {e.Message}");
         }
     }
 }
